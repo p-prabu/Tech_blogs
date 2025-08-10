@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Active Directory MCQ Quiz — Dark/Light + Donut</title>
+<style>
+  /* ---------- THEME TOKENS ---------- */
+  :root{
+    /* Light (overridden by [data-theme="dark"]) */
+    --bg:#ffffff;
+    --text:#0f172a;
+    --muted:#475569;
+    --card:#f8fafc;
+    --border:#e2e8f0;
+    --option:#f1f5f9;
+    --accent:#2563eb;
+    --accent-contrast:#ffffff;
+    --good:#16a34a;
+    --bad:#dc2626;
+    --unans:#64748b;
+    --input-accent:#2563eb;
+    --shadow: 0 6px 20px rgba(2,6,23,.08);
+  }
+  [data-theme="dark"]{
+    --bg:#0b1220;
+    --text:#e6edf3;
+    --muted:#94a3b8;
+    --card:#121a2b;
+    --border:#23314f;
+    --option:#0f1627;
+    --accent:#4f46e5;
+    --accent-contrast:#ffffff;
+    --good:#22c55e;
+    --bad:#ef4444;
+    --unans:#64748b;
+    --input-accent:#8b5cf6;
+    --shadow: 0 8px 24px rgba(2,6,23,.25);
+  }
+
+  /* ---------- BASE LAYOUT ---------- */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    background:var(--bg); color:var(--text); transition:background .25s,color .25s;
+  }
+  header{
+    position:sticky; top:0; z-index:10; backdrop-filter:blur(8px);
+    background:color-mix(in oklab, var(--bg) 80%, transparent);
+    border-bottom:1px solid var(--border);
+  }
+  .wrap{max-width:1100px; margin:auto; padding:16px}
+  .title{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  h1{margin:0; font-size:20px}
+  .badge{padding:6px 10px; border:1px solid var(--border); border-radius:999px; color:var(--muted)}
+  .spacer{flex:1}
+  .pill{padding:6px 10px; border-radius:999px; border:1px solid var(--border); color:var(--muted)}
+  .btn{appearance:none; border:none; cursor:pointer; font-weight:600; border-radius:10px; padding:10px 14px}
+  .btn.primary{background:var(--accent); color:var(--accent-contrast)}
+  .btn.secondary{background:transparent; color:var(--text); border:1px solid var(--border)}
+
+  main{padding:18px 0 110px}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    box-shadow:var(--shadow); padding:16px; margin:12px 0; transition:background .25s,border-color .25s;
+  }
+  .qhead{display:flex; gap:10px; align-items:flex-start}
+  .qnum{background:var(--option); color:var(--muted); border:1px solid var(--border);
+        font-weight:700; border-radius:10px; padding:4px 8px; min-width:38px; text-align:center}
+  .qtext{font-weight:700}
+  .options{margin-top:10px; display:grid; gap:8px}
+  .opt{display:flex; gap:10px; align-items:flex-start; background:var(--option);
+       border:1px solid var(--border); border-radius:10px; padding:10px; cursor:pointer; transition:transform .05s}
+  .opt:active{transform:scale(.997)}
+  .opt input{margin-top:3px; accent-color:var(--input-accent)}
+  .opt.correct{border-color:color-mix(in oklab, var(--good) 60%, var(--border));
+               background:color-mix(in oklab, var(--good) 14%, var(--option))}
+  .opt.wrong{border-color:color-mix(in oklab, var(--bad) 70%, var(--border));
+             background:color-mix(in oklab, var(--bad) 12%, var(--option))}
+  .feedback{margin-top:8px; font-size:.95rem}
+  .feedback.good{color:var(--good)}
+  .feedback.bad{color:var(--bad)}
+
+  footer{
+    position:sticky; bottom:0; background:color-mix(in oklab, var(--bg) 86%, transparent);
+    border-top:1px solid var(--border); backdrop-filter:blur(8px);
+  }
+  .summary{display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+
+  /* Toggle switch styling */
+  .switch{display:inline-flex; align-items:center; gap:8px}
+  .switch input{display:none}
+  .slider{width:52px; height:28px; background:var(--option); border:1px solid var(--border); border-radius:999px; position:relative}
+  .slider::after{content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; background:var(--bg); border:1px solid var(--border); border-radius:50%; transition:left .2s}
+  input:checked + .slider::after{left:27px}
+  .modeLabel{color:var(--muted); font-weight:600}
+
+  /* Donut chart layout */
+  .chartBox{display:flex; gap:16px; align-items:center}
+  .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--muted)}
+  .legend span{display:inline-flex; align-items:center; gap:6px}
+  .dot{width:10px; height:10px; border-radius:50%}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap title">
+    <h1>Active Directory Basic — MCQ Practice</h1>
+    <span class="badge">Instant feedback</span>
+    <div class="spacer"></div>
+    <span class="pill" id="liveScore">Score: 0/50</span>
+    <span class="pill" id="liveBreakdown">Correct: 0 • Wrong: 0 • Unanswered: 50</span>
+    <button class="btn secondary" id="resetBtn">Reset</button>
+    <button class="btn primary" id="submitBtn">Submit All</button>
+    <label class="switch" title="Toggle dark/light">
+      <input type="checkbox" id="themeToggle" />
+      <span class="slider"></span>
+      <span class="modeLabel" id="modeText">Dark</span>
+    </label>
+  </div>
+</header>
+
+<main class="wrap" id="quiz"></main>
+
+<footer>
+  <div class="wrap summary" id="finalSummary" aria-live="polite">
+    <div class="chartBox">
+      <!-- Donut chart (SVG) -->
+      <svg id="donut" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="Quiz result chart">
+        <!-- base ring -->
+        <circle cx="60" cy="60" r="50" fill="none" stroke="#1e293b" stroke-width="16"/>
+        <!-- segments: correct, wrong, unanswered -->
+        <circle id="segCorrect"   cx="60" cy="60" r="50" fill="none" stroke="var(--good)"  stroke-width="16" stroke-dasharray="0 314" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+        <circle id="segWrong"     cx="60" cy="60" r="50" fill="none" stroke="var(--bad)"   stroke-width="16" stroke-dasharray="0 314" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+        <circle id="segUnanswered"cx="60" cy="60" r="50" fill="none" stroke="var(--unans)" stroke-width="16" stroke-dasharray="0 314" stroke-linecap="butt" transform="rotate(-90 60 60)"/>
+        <!-- center label -->
+        <circle cx="60" cy="60" r="34" fill="var(--bg)" stroke="var(--border)" stroke-width="1"/>
+        <text id="donutLabel" x="60" y="60" text-anchor="middle" dominant-baseline="central" font-size="14" fill="var(--text)">0/50</text>
+      </svg>
+      <div>
+        <div id="finalLine">Ready when you are. Press “Submit All” for a summary.</div>
+        <div class="legend" style="margin-top:6px;">
+          <span><span class="dot" style="background:var(--good)"></span>Correct</span>
+          <span><span class="dot" style="background:var(--bad)"></span>Wrong</span>
+          <span><span class="dot" style="background:var(--unans)"></span>Unanswered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---------- THEME TOGGLE with persistence ----------
+const root = document.documentElement;
+const toggle = document.getElementById('themeToggle');
+const modeText = document.getElementById('modeText');
+(function initTheme(){
+  const saved = localStorage.getItem('adquiz-theme');
+  if(saved === 'light' || saved === 'dark'){
+    root.setAttribute('data-theme', saved);
+    toggle.checked = (saved === 'light');
+  }
+  modeText.textContent = root.getAttribute('data-theme') === 'light' ? 'Light' : 'Dark';
+})();
+
+toggle.addEventListener('change', () => {
+  const next = toggle.checked ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  localStorage.setItem('adquiz-theme', next);
+  modeText.textContent = next === 'light' ? 'Light' : 'Dark';
+});
+
+// ---------- QUESTIONS (add your full 50) ----------
+const QUESTIONS = [
+ { q:"Which TCP port does Active Directory use for standard LDAP?",
+    options:["389","443","80","25"], answer:0,
+    explain:"LDAP uses TCP 389 by default; LDAPS uses 636." },
+  { q:"Primary purpose of Active Directory in an organization?",
+    options:["Email routing","Centralized authentication/authorization","DHCP leasing","Source control"],
+    answer:1, explain:"AD centralizes identity, access, and directory data." },
+  { q:"Which are core logical components of AD?",
+    options:["Site, VLAN, Router","Domain, Tree, Forest, OU, Objects","Subnet, Trunk, Switch","Realm, Zone, Host"],
+    answer:1, explain:"AD organizes objects using domains/OUs; trees form forests." },
+  { q:"What is a Domain Controller (DC)?",
+    options:["A file share","A server hosting the AD DS database and logons","A router feature","A PKI HSM"],
+    answer:1, explain:"The DC stores the directory and handles authentication." },
+  { q:"What is an Organizational Unit (OU) used for?",
+    options:["Internet access","Organizing objects and delegating admin","IP routing","Printing"],
+    answer:1, explain:"OUs structure objects and support delegation/GPO targeting." },
+  { q:"What is a forest in Active Directory?",
+    options:["A site link type","Collection of one or more trees sharing a schema/GC","A backup term","A DNS zone only"],
+    answer:1, explain:"A forest is the top boundary; trees share schema and GC." },
+  { q:"In AD, a tree is…",
+    options:["Any subnet list","A hierarchical set of domains with contiguous DNS names","A storage pool","A site group"],
+    answer:1, explain:"Domains with contiguous namespaces form a tree." },
+  { q:"Role of the Global Catalog (GC)?",
+    options:["NTP service","Holds partial attributes of all objects for fast searches/logons","Firewalling","DFS only"],
+    answer:1, explain:"GC accelerates searches and helps UPN logons/UGM checks." },
+  { q:"Domain vs OU — which is true?",
+    options:["OU defines security boundary; domain is only grouping",
+             "Domain is a security boundary; OU organizes within a domain",
+             "Both are security boundaries","Neither affects security"],
+    answer:1, explain:"Permissions span OUs; domains form security boundaries." },
+  { q:"LDAP in relation to AD is…",
+    options:["A filesystem","A directory access protocol used by AD","A mail relay","A hypervisor"],
+    answer:1, explain:"AD exposes directory data over LDAP." },
+  { q:"Why is DNS critical for AD?",
+    options:["For PXE boot","For name/service location of DCs (SRV records)","For NAT","For IPSec only"],
+    answer:1, explain:"Clients/DCs locate services via DNS SRV records." },
+  { q:"AD replication is…",
+    options:["DHCP lease sharing","File copy of SYSVOL only","Sync of directory data among DCs","Tape backup rotation"],
+    answer:2, explain:"Directory partitions replicate between DCs." },
+  { q:"Default authentication protocol in modern AD?",
+    options:["RADIUS","Kerberos","TACACS+","Telnet"],
+    answer:1, explain:"Kerberos is default; NTLM remains for legacy cases." },
+  { q:"Kerberos primarily provides…",
+    options:["Packet capture","Ticket-based authentication","Disk encryption","GPO editing"],
+    answer:1, explain:"Kerberos issues tickets via KDC for secure auth." },
+  { q:"GPOs (Group Policy Objects) are used to…",
+    options:["Manage routing","Apply user/computer configuration at scale","Run SQL","Send email"],
+    answer:1, explain:"GPOs configure security and settings centrally." },
+  { q:"Domain Functional Level (DFL) controls…",
+    options:["Printer speed","Available AD features tied to DC OS versions","RAM usage","Time zone"],
+    answer:1, explain:"Higher DFL unlocks newer AD features." },
+  { q:"Security group vs distribution group?",
+    options:["Both assign NTFS perms","Security assigns access; distribution is for email","Distribution assigns access only","Neither is used"],
+    answer:1, explain:"Security groups appear in ACLs; distribution groups don't." },
+  { q:"Fastest way to create many users?",
+    options:["Manual in Notepad","PowerPoint","PowerShell with CSV + New-ADUser","SNMP"],
+    answer:2, explain:"Import-CSV + New-ADUser is the standard approach." },
+  { q:"Reset a user password via…",
+    options:["ADUC or Set-ADAccountPassword","DHCP console","WSUS","RD Gateway"],
+    answer:0, explain:"Use ADUC or PowerShell cmdlets to reset passwords." },
+  { q:"Unlock a locked account with…",
+    options:["Unlock-ADAccount or ADUC","Defrag","ARPSpoof","FTP"],
+    answer:0, explain:"Use ADUC or Unlock-ADAccount." },
+  { q:"AD Sites and Services is used to…",
+    options:["Configure VLANs","Manage replication topology/subnets/DC locator","Edit BIOS","Patch Windows"],
+    answer:1, explain:"Sites, subnets, links guide replication and DC selection." },
+  { q:"AD FS provides…",
+    options:["Disk quotas","Federated SSO and claims-based auth","WDS imaging","RAS dial-up"],
+    answer:1, explain:"AD FS enables SSO with claims to external apps." },
+  { q:"The AD schema defines…",
+    options:["DNS forwarders","Object classes/attributes structure","RAID levels","PXE menu"],
+    answer:1, explain:"Schema is the blueprint of objects/attributes." },
+  { q:"SYSVOL primarily stores…",
+    options:["SQL DBs","GPO templates and logon scripts","IIS sites","Registry backups"],
+    answer:1, explain:"GPOs and scripts replicate via SYSVOL." },
+  { q:"Domain vs workgroup?",
+    options:["Workgroup is centralized; domain is peer-to-peer",
+             "Domain centralizes auth/admin; workgroup is standalone peers",
+             "Both are identical","Workgroup requires DCs"],
+    answer:1, explain:"Domains use DCs; workgroups keep local accounts." },
+  { q:"Adding a new domain controller generally requires…",
+    options:["Enterprise Admin always","Domain Admin (for additional DC in domain)","Schema Admin only","No rights"],
+    answer:1, explain:"Domain Admin is sufficient for an additional DC." },
+  { q:"FSMO roles are…",
+    options:["Optional GPOs","Single-master roles for specific tasks","DNS aliases","Backup tapes"],
+    answer:1, explain:"Five special roles coordinate unique operations." },
+  { q:"Which is NOT an FSMO role?",
+    options:["Schema Master","RID Master","PDC Emulator","DNS Master"],
+    answer:3, explain:"The five are Schema, Domain Naming, RID, PDC, Infrastructure." },
+  { q:"How to transfer FSMO roles?",
+    options:["Reboot DCs","NTDSUTIL or AD MMC tools","Edit registry","IP helper"],
+    answer:1, explain:"Use GUI consoles or ntdsutil safely to transfer." },
+  { q:"Trusts in AD allow…",
+    options:["Time sync","Access across domains/forests","WDS multicast","PXE boot"],
+    answer:1, explain:"Trusts enable cross-boundary authentication/authorization." },
+  { q:"One-way vs two-way trust?",
+    options:["No difference","One direction of access vs mutual access","Two-way blocks access","One-way needs NTLM only"],
+    answer:1, explain:"Two-way trusts provide bidirectional access." },
+  { q:"Best way to manage permissions at scale?",
+    options:["Per-user ACLs","Use security groups in ACLs","Local groups only","Registry edits"],
+    answer:1, explain:"Assign permissions to groups, not individuals." },
+  { q:"Can users be members of multiple groups?",
+    options:["No","Yes","Only two","Only if admins"],
+    answer:1, explain:"Users commonly belong to many groups." },
+  { q:"Local vs Global group scope (core idea)?",
+    options:["Local scope applies across forest; global only local machine",
+             "Domain Local grants perms in its domain; Global is for accounts in its domain",
+             "Global equals universal","Local is obsolete"],
+    answer:1, explain:"Use Global for accounts; nest into Domain Local for resource ACLs." },
+  { q:"Bulk import users from CSV with PowerShell using…",
+    options:["Import-Module Hyper-V","Import-CSV + New-ADUser","Invoke-WebRequest","reg.exe"],
+    answer:1, explain:"Classic pattern to create many users quickly." },
+  { q:"AD DS (Domain Services) mainly…",
+    options:["Stores directory data and provides auth services","Runs containers","Builds images","Only PKI"],
+    answer:0, explain:"AD DS is the core directory/auth service." },
+  { q:"Backup/restore AD commonly via…",
+    options:["Windows Server Backup/wbadmin and system state","Word export","Manual copy of ntds.dit","SFC"],
+    answer:0, explain:"System state backups are key for AD recovery." },
+  { q:"AD LDS is…",
+    options:["A lightweight directory service without domains/GC","A DHCP server","An IIS role","A DFS mode"],
+    answer:0, explain:"Standalone LDAP directory separate from AD DS." },
+  { q:"High-level DR steps in AD include…",
+    options:["Reimage DCs only","Authoritative/Non-authoritative restore, seize FSMO if needed","Format SYSVOL","Disable DNS"],
+    answer:1, explain:"Recover from backup and restore/failover roles properly." },
+  { q:"KDC’s job is to…",
+    options:["Route OSPF","Issue Kerberos tickets (TGT/TGS)","Serve DFS","Do PXE"],
+    answer:1, explain:"Key Distribution Center issues tickets." },
+  { q:"Can a DC natively serve multiple forests?",
+    options:["Yes","No — use trusts across forests","Only with DHCP","Only Azure AD"],
+    answer:1, explain:"A single DC belongs to one forest; forests trust each other." },
+  { q:"AD vs Azure AD?",
+    options:["Same product","AD is on-prem AD DS; Azure AD is cloud identity platform","Azure AD is a DC","AD is SaaS"],
+    answer:1, explain:"Different architectures/use cases; often integrated." },
+  { q:"AD CS role provides…",
+    options:["WSUS","Certificate authority services","NTP","WAF"],
+    answer:1, explain:"AD CS issues/manages certificates (PKI)." },
+  { q:"Basic AD CS setup involves…",
+    options:["Install role and configure a CA hierarchy","Install DHCP","Configure DFS","Join workgroup"],
+    answer:0, explain:"Deploy Enterprise/Standalone CAs as needed." },
+  { q:"AD RMS (legacy) was used to…",
+    options:["Route mail","Protect documents/emails with rights policies","Only encrypt disks","Compress files"],
+    answer:1, explain:"RMS applies usage rights like no-forward/print." },
+  { q:"AD Recycle Bin lets you…",
+    options:["Recover deleted AD objects with attributes","Restore Registry","Rollback GPO versions only","Clone DCs"],
+    answer:0, explain:"Restores objects including group memberships." },
+  { q:"Enable Recycle Bin using…",
+    options:["ADAC or PowerShell","IIS Manager","DNS console","RRAS"],
+    answer:0, explain:"Enable feature at forest level via ADAC/PowerShell." },
+  { q:"Solid AD security practice?",
+    options:["Shared admin passwords","Least privilege + auditing + strong auth","Disable logs","Use Everyone full control"],
+    answer:1, explain:"Principle of least privilege with monitoring is key." },
+  { q:"Monitor AD health with…",
+    options:["dcdiag and Event Viewer","Paint","Notepad","calc.exe"],
+    answer:0, explain:"dcdiag, repadmin, Event Viewer, plus monitoring tools." },
+  { q:"Why audit/log changes in AD?",
+    options:["For color themes","Track changes, detect threats, meet compliance","Speed up DNS","Enable RDP themes"],
+    answer:1, explain:"Auditing gives traceability and detection signals." },
+];
+
+// ---------- STATE ----------
+const state = { selected: new Array(QUESTIONS.length).fill(null), correct: 0, wrong: 0 };
+
+// ---------- DOM REFS ----------
+const quizEl = document.getElementById('quiz');
+const scoreEl = document.getElementById('liveScore');
+const breakdownEl = document.getElementById('liveBreakdown');
+const finalLine = document.getElementById('finalLine');
+const donut = {
+  correct: document.getElementById('segCorrect'),
+  wrong: document.getElementById('segWrong'),
+  unans: document.getElementById('segUnanswered'),
+  label: document.getElementById('donutLabel'),
+  C: 2 * Math.PI * 50
+};
+
+// ---------- RENDER ----------
+function renderQuiz(){
+  quizEl.innerHTML = '';
+  QUESTIONS.forEach((item, idx) => {
+    const card = document.createElement('section');
+    card.className = 'card';
+    card.dataset.index = idx;
+    card.innerHTML = `
+      <div class="qhead">
+        <div class="qnum">${idx+1}</div>
+        <div class="qtext">${item.q}</div>
+      </div>
+      <div class="options">
+        ${item.options.map((opt,i)=>`
+          <label class="opt" for="q${idx}_${i}">
+            <input type="radio" id="q${idx}_${i}" name="q${idx}" value="${i}" />
+            <div>${String.fromCharCode(65+i)}. ${opt}</div>
+          </label>`).join('')}
+      </div>
+      <div class="feedback" id="fb_${idx}"></div>
+    `;
+    card.querySelectorAll('.opt').forEach((label,i)=>{
+      label.addEventListener('click',()=>onSelect(idx,i,label));
+    });
+    quizEl.appendChild(card);
+  });
+  updateHeader();
+  updateDonut(0,0,QUESTIONS.length); // initial donut 0/total
+}
+
+function onSelect(qIndex, optIndex, labelEl){
+  const q = QUESTIONS[qIndex];
+  const fb = document.getElementById(`fb_${qIndex}`);
+  const card = document.querySelector(`.card[data-index="${qIndex}"]`);
+  const prev = state.selected[qIndex];
+  const wasGraded = prev !== null;
+
+  labelEl.querySelector('input').checked = true;
+  card.querySelectorAll('.opt').forEach(o=>o.classList.remove('correct','wrong'));
+  state.selected[qIndex] = optIndex;
+
+  if(optIndex === q.answer){
+    labelEl.classList.add('correct');
+    fb.className = 'feedback good';
+    fb.textContent = `Good! ${q.explain}`;
+    if(!wasGraded){ state.correct++; }
+    if(wasGraded && prev !== q.answer){ state.wrong--; state.correct++; }
+  }else{
+    labelEl.classList.add('wrong');
+    fb.className = 'feedback bad';
+    const correctText = q.options[q.answer];
+    fb.textContent = `Incorrect. Correct: ${correctText}. ${q.explain}`;
+    if(!wasGraded){ state.wrong++; }
+    if(wasGraded && prev === q.answer){ state.correct--; state.wrong++; }
+  }
+  updateHeader();
+  // If you prefer live donut updates on each answer, uncomment:
+  // const answered = state.selected.filter(v=>v!==null).length;
+  // updateDonut(state.correct, state.wrong, QUESTIONS.length - answered);
+}
+
+function updateHeader(){
+  const total = QUESTIONS.length;
+  const answered = state.selected.filter(v=>v!==null).length;
+  const unanswered = total - answered;
+  scoreEl.textContent = `Score: ${state.correct}/${total}`;
+  breakdownEl.textContent = `Correct: ${state.correct} • Wrong: ${state.wrong} • Unanswered: ${unanswered}`;
+}
+
+function submitAll(){
+  const total = QUESTIONS.length;
+  const answered = state.selected.filter(v=>v!==null).length;
+  const unanswered = total - answered;
+  const {correct, wrong} = state;
+  finalLine.textContent = `Summary — Score: ${correct}/${total}. Correct: ${correct}, Wrong: ${wrong}, Unanswered: ${unanswered}.`;
+  updateDonut(correct, wrong, unanswered);
+  window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+}
+
+function updateDonut(correct, wrong, unanswered){
+  const total = QUESTIONS.length || 1; // guard
+  const C = donut.C; // circumference
+  const corrLen = (correct/total)*C;
+  const wrongLen = (wrong/total)*C;
+  const unLen   = (unanswered/total)*C;
+
+  donut.correct.setAttribute('stroke-dasharray', `${corrLen} ${C-corrLen}`);
+  donut.wrong.setAttribute('stroke-dasharray', `${wrongLen} ${C-wrongLen}`);
+  donut.unans.setAttribute('stroke-dasharray', `${unLen} ${C-unLen}`);
+
+  donut.correct.setAttribute('stroke-dashoffset', 0);
+  donut.wrong.setAttribute('stroke-dashoffset', -corrLen);
+  donut.unans.setAttribute('stroke-dashoffset', -(corrLen+wrongLen));
+
+  donut.label.textContent = `${state.correct}/${total}`;
+}
+
+function resetAll(){
+  state.selected.fill(null); state.correct = 0; state.wrong = 0;
+  renderQuiz();
+  finalLine.textContent = 'Reset complete. Start again when ready.';
+}
+
+document.getElementById('submitBtn').addEventListener('click', submitAll);
+document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+renderQuiz();
+</script>
+</body>
+</html>
