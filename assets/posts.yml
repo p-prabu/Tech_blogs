@@ -145,3 +145,8 @@
 - title: repadmin
   path: posts/Advanced-repadmin-Commands.md
   category: Active Directory
+
+- title: Advanced AD Commmands
+  path: posts/Admin-Commands-Advanced.md
+  category: Active Directory
+
