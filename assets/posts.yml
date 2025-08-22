@@ -137,3 +137,11 @@
 - title: CVE_MC1113050 RPC_Anonymous_Netlogon
   path: posts/RPC_Anonymous_Netlogon_protocol.md
   category: CVE
+
+- title: dcdiag
+  path: posts/Advanced-dcdiag-Commands.md
+  category: Active Directory
+
+- title: repadmin
+  path: posts/Advanced-repadmin-Commands.md
+  category: Active Directory
