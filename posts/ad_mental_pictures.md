@@ -7,6 +7,8 @@ Each button on it controls a setting — one sets the wallpaper, one installs so
 When you press a button, all the computers in your domain follow the instruction.  
 🟢 One click = Rule applied to all.
 
+![Group Policy](https://ad.prabuponnan.in/image/ad/RemoteController.png)
+
 ---
 
 ## 2. Replication  
