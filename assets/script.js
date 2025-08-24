@@ -113,17 +113,18 @@ document.addEventListener("DOMContentLoaded", function () {
       if (categoryList) {
         categoryList.addEventListener('click', (e) => {
           console.log('🖱️ Category list clicked:', e.target);
-          
-          if (e.target.classList.contains('nav-link')) {
+
+          const link = e.target.closest('a.nav-link');
+          if (link) {
             e.preventDefault();
-            const postPath = e.target.dataset.path;
-            const postTitle = e.target.dataset.title;
-            
+            const postPath = link.dataset.path;
+            const postTitle = link.dataset.title;
+
             console.log('🖱️ Nav link clicked:', { postPath, postTitle });
-            
+
             if (postPath && postTitle) {
               this.loadPost(postPath, postTitle);
-              
+
               // Auto-close sidebar on mobile
               if (currentBreakpoint === 'mobile') {
                 const sidebar = bootstrap.Offcanvas.getInstance(sidebarOffcanvas);
@@ -545,24 +546,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Load Posts Data with enhanced debugging
   console.log('📥 Starting to load posts data...');
-  
-  fetch("assets/posts.yml")
+
+  const postsJsonPath = location.pathname.includes('/posts/') ? '../assets/posts.json' : './assets/posts.json';
+  fetch(postsJsonPath)
     .then(res => {
-      console.log('🌐 Posts YAML fetch response:', { status: res.status, ok: res.ok, url: res.url });
+      console.log('🌐 Posts JSON fetch response:', { status: res.status, ok: res.ok, url: res.url });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      return res.text();
+      return res.json();
     })
-    .then(yamlText => {
-      console.log('📄 YAML text loaded, length:', yamlText.length);
-      console.log('📄 First 200 chars:', yamlText.substring(0, 200));
-      
+    .then(jsonData => {
+      console.log('📄 JSON loaded, items:', jsonData.length);
+
       try {
-        const parsedYaml = jsyaml.load(yamlText);
-        console.log('🔍 Parsed YAML:', parsedYaml);
-        
-        allPosts = parsedYaml || [];
+        allPosts = Array.isArray(jsonData) ? jsonData : [];
         console.log('📚 All posts loaded:', allPosts.length, 'posts');
-        
+
         // Validate posts data
         const validPosts = allPosts.filter(post => {
           const isValid = post && post.title && post.path && post.category;
@@ -571,9 +569,9 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           return isValid;
         });
-        
+
         console.log('✅ Valid posts:', validPosts.length);
-        
+
         // Group posts by category
         postsByCategory = validPosts.reduce((acc, post) => {
           const category = post.category || 'Uncategorized';
@@ -584,26 +582,25 @@ document.addEventListener("DOMContentLoaded", function () {
           acc[category].push(post);
           return acc;
         }, {});
-        
+
         console.log('📊 Posts by category:', postsByCategory);
         console.log('📈 Category summary:');
         Object.entries(postsByCategory).forEach(([category, posts]) => {
           console.log(`  ${category}: ${posts.length} posts`);
         });
-        
+
         // Render the category list
         console.log('🎨 Calling renderCategoryList...');
         layoutManager.renderCategoryList();
-        
+
       } catch (error) {
-        console.error('❌ Error parsing posts YAML:', error);
-        console.error('📄 YAML content that failed:', yamlText);
-        
+        console.error('❌ Error processing posts JSON:', error);
+
         if (categoryList) {
           categoryList.innerHTML = `
             <li class="nav-item">
               <div class="alert alert-warning m-3" role="alert">
-                <h6 class="alert-heading">YAML Parsing Error</h6>
+                <h6 class="alert-heading">Data Error</h6>
                 <small>Error: ${error.message}</small><br>
                 <small class="text-muted">Please refresh the page or check the console for details.</small>
               </div>
@@ -613,8 +610,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     })
     .catch(err => {
-      console.error('❌ Error loading posts YAML file:', err);
-      
+      console.error('❌ Error loading posts JSON file:', err);
+
       if (categoryList) {
         categoryList.innerHTML = `
           <li class="nav-item">

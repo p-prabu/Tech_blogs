@@ -67,10 +67,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  fetch("assets/posts.yml")
-    .then(res => res.text())
-    .then(yamlText => {
-      const posts = jsyaml.load(yamlText);
+  const postsJsonPath = location.pathname.includes('/posts/') ? '../assets/posts.json' : 'assets/posts.json';
+  fetch(postsJsonPath)
+    .then(res => res.json())
+    .then(posts => {
       postsByCategory = posts.reduce((acc, post) => {
         if (!acc[post.category]) acc[post.category] = [];
         acc[post.category].push(post);
