@@ -21,6 +21,8 @@ Then, they pass copies of that note to the others.
 This keeps everyone on the same page — literally!  
 🟢 Everyone gets the same update so nothing goes out of sync.
 
+![Replicaiton](../images/ad/mentalreplication.png)
+
 ---
 
 ## 3. Trust Relationships  
@@ -31,6 +33,8 @@ But when you create a trust, you build a bridge between castles.
 Now, users from one domain can safely enter the other — with permission.  
 🟢 Trust is the bridge that allows safe access.
 
+![Trust Relationships](../images/ad/mental_trust_relationship.png)
+
 ---
 
 ## 4. Sites  
@@ -39,6 +43,8 @@ Picture a big map with cities marked — each city is a site.
 Domain Controllers live in these cities.  
 Active Directory uses this map to figure out the best way to send messages and sync data.  
 🟢 Helps control traffic and speed up logins or replication.
+
+![Site](../images/ad/mental_ad_sites.png)
 
 ---
 
@@ -49,6 +55,8 @@ Each club has its members — users or computers.
 You can give a whole club access to a door instead of giving keys one by one.  
 🟢 Easy permission management by using groups.
 
+![Groups](../images/ad/mental_group.png)
+
 ---
 
 ## 6. Organizational Units (OUs)  
@@ -58,6 +66,9 @@ Each wing is an OU, where you can keep similar people (like HR, IT, or Finance).
 You can apply specific rules to just that wing.  
 🟢 Makes your castle well-organized and manageable.
 
+![Organizational Units](../images/ad/mental_ou.png)
+
+
 ---
 
 ## 7. Domain  
@@ -65,6 +76,8 @@ You can apply specific rules to just that wing.
 A domain is a full-functioning castle.  
 It has people (users), rules (policies), and a ruler (domain controller).  
 🟢 It’s the basic unit in the AD world.
+
+![Domain](../images/ad/mental_domain.png)
 
 ---
 
@@ -74,6 +87,8 @@ Every castle needs a leader.
 The domain controller is like the king or the head librarian who keeps track of all the accounts, passwords, and permissions.  
 🟢 Without it, your kingdom wouldn’t know who’s allowed where.
 
+![Domain Controller](../images/ad/mental_dc.png)
+
 ---
 
 ## 9. Forest  
@@ -82,3 +97,8 @@ Think of the forest as the entire realm.
 It has many castles (domains), all ruled under the same master book of rules.  
 All castles in the forest can be connected with trust and share the same structure.  
 🟢 Forest = Topmost level in Active Directory.
+
+
+![Forest](../images/ad/mental_forest.png)
+
+---
