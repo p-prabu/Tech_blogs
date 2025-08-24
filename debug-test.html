@@ -44,13 +44,11 @@
 
     <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     
     <script>
         // Test 1: Check if libraries are loaded
-        document.getElementById('libTest').innerHTML = 
-            (typeof marked !== 'undefined' ? '✅ marked.js loaded' : '❌ marked.js failed') + '<br>' +
-            (typeof jsyaml !== 'undefined' ? '✅ js-yaml loaded' : '❌ js-yaml failed');
+        document.getElementById('libTest').innerHTML =
+            (typeof marked !== 'undefined' ? '✅ marked.js loaded' : '❌ marked.js failed');
         
         // Test 2: Check DOM elements
         const categoryList = document.getElementById("categoryList");
@@ -60,22 +58,18 @@
             (categoryList ? '✅ categoryList found' : '❌ categoryList not found') + '<br>' +
             (postContent ? '✅ postContent found' : '❌ postContent not found');
         
-        // Test 3: Load and parse YAML
-        fetch("assets/posts.yml")
+        // Test 3: Load and parse posts JSON
+        fetch("assets/posts.json")
             .then(res => {
-                console.log('YAML fetch response:', res);
+                console.log('JSON fetch response:', res);
                 document.getElementById('yamlTest').innerHTML = `🌐 Fetch status: ${res.status} ${res.statusText}<br>`;
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return res.text();
+                return res.json();
             })
-            .then(yamlText => {
-                console.log('YAML text loaded:', yamlText.length, 'characters');
-                document.getElementById('yamlTest').innerHTML += `📄 YAML loaded: ${yamlText.length} characters<br>`;
-                
-                const posts = jsyaml.load(yamlText);
-                console.log('Parsed posts:', posts);
-                document.getElementById('yamlTest').innerHTML += `📊 Parsed: ${posts.length} posts<br>`;
-                
+            .then(posts => {
+                console.log('Posts loaded:', posts.length);
+                document.getElementById('yamlTest').innerHTML += `📄 Posts loaded: ${posts.length}<br>`;
+
                 // Group by category
                 const postsByCategory = posts.reduce((acc, post) => {
                     const category = post.category || 'Uncategorized';
@@ -109,10 +103,10 @@
                 });
                 
                 document.getElementById('yamlTest').innerHTML += '✅ Categories rendered successfully';
-                
+
             })
             .catch(err => {
-                console.error('YAML loading error:', err);
+                console.error('Posts loading error:', err);
                 document.getElementById('yamlTest').innerHTML += `❌ Error: ${err.message}`;
             });
         
