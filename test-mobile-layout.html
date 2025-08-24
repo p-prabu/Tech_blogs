@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Layout Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 2px solid #0d6efd;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    .test-header {
+      color: #0d6efd;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .test-result {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d1e7dd;
+      color: #0f5132;
+      border: 1px solid #badbcc;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #842029;
+      border: 1px solid #f5c2c7;
+    }
+    .info {
+      background-color: #cff4fc;
+      color: #055160;
+      border: 1px solid #b6effb;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    .mobile-frame {
+      width: 375px;
+      height: 812px;
+      border: 1px solid #000;
+      border-radius: 20px;
+      margin: 20px auto;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    .test-instructions {
+      background-color: #fff3cd;
+      color: #664d03;
+      border: 1px solid #ffecb5;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .check-item {
+      margin: 5px 0;
+      display: flex;
+      align-items: center;
+    }
+    .check-item input[type="checkbox"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Mobile Layout Cleanup Test</h1>
+  <p>This page helps test the mobile layout improvements for the AD Tech Blog.</p>
+
+  <div class="test-instructions">
+    <h3>📋 Test Checklist</h3>
+    <p>Please verify the following items work correctly on mobile:</p>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check1">
+      <label for="check1">Mobile header is completely removed (no hamburger icon visible)</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check2">
+      <label for="check2">Welcome message is hidden on mobile view</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check3">
+      <label for="check3">Search bar is visible at the top of the page</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check4">
+      <label for="check4">Topics list is visible directly below the search bar</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check5">
+      <label for="check5">Clicking a topic opens content in full-screen overlay</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check6">
+      <label for="check6">Back button is visible and functional in content view</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check7">
+      <label for="check7">Search functionality works properly</label>
+    </div>
+    
+    <div class="check-item">
+      <input type="checkbox" id="check8">
+      <label for="check8">Page layout is responsive and mobile-friendly</label>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-header">📱 Mobile View Test</div>
+    <p>Test the blog in a mobile-sized frame:</p>
+    <div class="mobile-frame">
+      <iframe src="http://localhost:8080" frameborder="0"></iframe>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <div class="test-header">🖥️ Desktop View Test</div>
+    <p>Test the blog in full desktop view:</p>
+    <iframe src="http://localhost:8080" frameborder="0"></iframe>
+  </div>
+
+  <div class="test-section">
+    <div class="test-header">🔧 Manual Testing Steps</div>
+    <ol>
+      <li><strong>Mobile Layout Test:</strong>
+        <ul>
+          <li>Open the mobile frame above</li>
+          <li>Verify no mobile header with hamburger menu is visible</li>
+          <li>Check that search and topics are directly accessible</li>
+          <li>Click on a topic to test content display</li>
+          <li>Test the back button functionality</li>
+        </ul>
+      </li>
+      <li><strong>Desktop Layout Test:</strong>
+        <ul>
+          <li>Check that desktop layout remains unchanged</li>
+          <li>Verify sidebar toggle functionality works</li>
+          <li>Test content loading and TOC functionality</li>
+        </ul>
+      </li>
+      <li><strong>Responsive Test:</strong>
+        <ul>
+          <li>Resize browser window from mobile to desktop width</li>
+          <li>Verify smooth transition between layouts</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <script>
+    // Auto-check items as user tests them
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    let checkedCount = 0;
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+        
+        if (checkedCount === checkboxes.length) {
+          alert('🎉 Congratulations! All tests appear to be passing. The mobile layout cleanup is successful!');
+        }
+      });
+    });
+
+    // Test result logging
+    function logTestResult(test, result, message) {
+      console.log(`Test: ${test} | Result: ${result} | Message: ${message}`);
+    }
+
+    console.log('📱 Mobile Layout Test Page Loaded');
+    console.log('ℹ️ Use the checklist above to verify mobile layout functionality');
+  </script>
+</body>
+</html>

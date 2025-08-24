@@ -10,26 +10,14 @@
   <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body class="layout-container">
-  <!-- Mobile Header (visible only on mobile) -->
-  <header class="mobile-header d-lg-none fixed-top">
-    <div class="d-flex justify-content-between align-items-center px-3 py-2">
-      <button class="btn btn-outline-light btn-sm" id="mobileMenuToggle" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" aria-label="Open navigation menu">
-        <i class="bi bi-list fs-5"></i>
-      </button>
-      <h5 class="mb-0 text-white fw-bold">📚 AD Tech Blog</h5>
-      <button class="btn btn-outline-light btn-sm" id="mobileTOCToggle" data-bs-toggle="modal" data-bs-target="#mobileTOCModal" aria-label="Open table of contents">
-        <i class="bi bi-bookmark fs-5"></i>
-      </button>
-    </div>
-  </header>
+  <!-- Mobile Header removed for simplified layout -->
 
-  <!-- Enhanced Sidebar with Topics -->
-  <nav class="sidebar-nav offcanvas-lg offcanvas-start" id="sidebarOffcanvas" tabindex="-1">
-        <div class="offcanvas-header d-lg-none">
-          <h5 class="offcanvas-title text-primary fw-bold">Navigation</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarOffcanvas" aria-label="Close"></button>
+  <!-- Direct accessible sidebar for mobile, enhanced sidebar for desktop -->
+  <nav class="sidebar-nav mobile-direct-access" id="sidebarNav" tabindex="-1">
+        <div class="sidebar-header d-lg-none">
+          <h5 class="sidebar-title text-primary fw-bold">AD Tech Blog</h5>
         </div>
-        <div class="offcanvas-body sidebar-content p-0">
+        <div class="sidebar-body sidebar-content p-0">
           <!-- Desktop Toggle Button -->
           <div class="desktop-toggle-container d-none d-lg-block">
             <button class="btn btn-outline-primary btn-sm" id="desktopMenuToggle" aria-label="Toggle sidebar">
@@ -100,19 +88,15 @@
     <i class="bi bi-arrow-right"></i>
   </button>
 
-  <!-- Hidden main content for mobile -->
-  <main class="main-content d-lg-none" id="mobileContent">
-        <article id="postContent" class="content-wrapper">
-          <div class="welcome-content text-center py-5">
-            <h1 class="display-4 fw-bold text-primary mb-4">Welcome to AD Tech Blog 👋</h1>
-            <p class="lead text-muted">Your comprehensive guide to Active Directory, PowerShell automation, and enterprise identity management.</p>
-            <div class="mt-4">
-              <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
-                <i class="bi bi-book me-2"></i>Browse Topics
-              </button>
-            </div>
-          </div>
-        </article>
+  <!-- Mobile content area - hidden by default, shows when topic is selected -->
+  <main class="mobile-content-area d-lg-none" id="mobileContent" style="display: none;">
+        <div class="mobile-content-header">
+          <button class="mobile-back-button" id="mobileBackButton">
+            <i class="bi bi-arrow-left"></i> Back
+          </button>
+          <h6 class="mobile-content-title" id="mobileContentTitle">Article</h6>
+        </div>
+        <article id="mobilePostContent" class="mobile-content-wrapper"></article>
   </main>
 
   <!-- Mobile TOC Modal -->

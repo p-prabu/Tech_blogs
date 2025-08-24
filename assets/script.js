@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const tocList = document.getElementById("tocList");
   const mobileTocList = document.getElementById("mobileTocList");
   const mobileTOCFab = document.getElementById("mobileTOCFab");
-  const sidebarOffcanvas = document.getElementById("sidebarOffcanvas");
+  const sidebarNav = document.getElementById("sidebarNav"); // Updated from sidebarOffcanvas
   const mobileTOCModal = document.getElementById("mobileTOCModal");
   const desktopMenuToggle = document.getElementById("desktopMenuToggle");
   const floatingSidebarToggle = document.getElementById("floatingSidebarToggle");
@@ -103,14 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }, 150));
 
-      // Sidebar event handling
-      if (sidebarOffcanvas) {
-        sidebarOffcanvas.addEventListener('hidden.bs.offcanvas', () => {
-          if (currentBreakpoint === 'mobile' && searchInput.value.trim()) {
-            this.clearSearch();
-          }
-        });
-      }
+      // Sidebar event handling - no longer needed for offcanvas
+      // Mobile sidebar is always visible, no offcanvas behavior
 
       // Desktop sidebar toggle functionality
       const toggleSidebar = () => {
@@ -170,13 +164,8 @@ document.addEventListener("DOMContentLoaded", function () {
               
               this.loadPost(postPath, postTitle);
               
-              // Auto-close sidebar on mobile
-              if (currentBreakpoint === 'mobile') {
-                const sidebar = bootstrap.Offcanvas.getInstance(sidebarOffcanvas);
-                if (sidebar) {
-                  sidebar.hide();
-                }
-              }
+              // No need to auto-close sidebar on mobile - content shows in overlay
+              console.log('📱 Mobile: Content will show in full-screen overlay');
             } else {
               console.warn('⚠️ Missing post data:', { postPath, postTitle });
             }
@@ -316,32 +305,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     initTouchGestures() {
-      if (currentBreakpoint !== 'mobile') return;
-
-      let touchStartX = 0;
-      let touchStartY = 0;
-      const threshold = 100;
-
-      document.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-
-      document.addEventListener('touchend', (e) => {
-        const touchEndX = e.changedTouches[0].clientX;
-        const touchEndY = e.changedTouches[0].clientY;
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = Math.abs(touchEndY - touchStartY);
-
-        // Swipe right from left edge to open sidebar
-        if (touchStartX < 50 && deltaX > threshold && deltaY < 100) {
-          const sidebar = bootstrap.Offcanvas.getInstance(sidebarOffcanvas) || 
-                         new bootstrap.Offcanvas(sidebarOffcanvas);
-          if (!sidebar._isShown) {
-            sidebar.show();
-          }
-        }
-      }, { passive: true });
+      // Touch gestures removed - mobile sidebar is now always visible
+      // No need for swipe-to-open functionality
+      console.log('📱 Touch gestures disabled - mobile sidebar is directly accessible');
     }
 
     initScrollBehavior() {
@@ -441,13 +407,67 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     loadPost(path, title) {
-      console.log('📖 Loading post:', { path, title });
+      console.log('📖 Loading post:', { path, title, currentBreakpoint });
       
       if (!path || !title) {
         console.error('❌ Invalid post data:', { path, title });
         this.showContentError(new Error('Invalid post data: missing path or title'));
         return;
       }
+      
+      // Handle mobile vs desktop content loading
+      if (currentBreakpoint === 'mobile') {
+        this.loadMobileContent(path, title);
+      } else {
+        this.loadDesktopContent(path, title);
+      }
+    }
+    
+    loadMobileContent(path, title) {
+      console.log('📱 Loading mobile content:', { path, title });
+      
+      const mobileContentArea = document.getElementById('mobileContent');
+      const mobilePostContent = document.getElementById('mobilePostContent');
+      const mobileContentTitle = document.getElementById('mobileContentTitle');
+      const mobileBackButton = document.getElementById('mobileBackButton');
+      
+      if (!mobileContentArea || !mobilePostContent) {
+        console.error('❌ Mobile content elements not found');
+        return;
+      }
+      
+      // Show mobile content area
+      mobileContentArea.style.display = 'flex';
+      
+      // Set title
+      if (mobileContentTitle) {
+        mobileContentTitle.textContent = title;
+      }
+      
+      // Setup back button
+      if (mobileBackButton) {
+        mobileBackButton.onclick = () => {
+          console.log('📱 Mobile back button clicked');
+          mobileContentArea.style.display = 'none';
+          window.scrollTo(0, 0);
+        };
+      }
+      
+      // Show loading in mobile content area
+      mobilePostContent.innerHTML = `
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3 text-muted">Loading article...</p>
+        </div>
+      `;
+      
+      this.fetchAndRenderContent(path, title, mobilePostContent);
+    }
+    
+    loadDesktopContent(path, title) {
+      console.log('🖥️ Loading desktop content:', { path, title });
       
       // Show loading spinner
       postContent.innerHTML = `
@@ -458,7 +478,13 @@ document.addEventListener("DOMContentLoaded", function () {
           <p class="mt-3 text-muted">Loading article...</p>
         </div>
       `;
-
+      
+      this.fetchAndRenderContent(path, title, postContent);
+    }
+    
+    fetchAndRenderContent(path, title, contentElement) {
+      console.log('🌐 Fetching content for:', { path, title });
+      
       // Add timeout to fetch request
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
@@ -500,38 +526,49 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log('✅ Markdown parsed successfully');
             console.log('🔍 HTML content length:', htmlContent.length);
             
-            postContent.innerHTML = `
+            contentElement.innerHTML = `
               <article class="markdown-body">
                 <h1 class="display-4 fw-bold text-primary mb-4">${title}</h1>
                 <div class="content-body">${htmlContent}</div>
               </article>
             `;
             
-            // Wait a bit for DOM to settle, then generate TOC
+            // Wait a bit for DOM to settle, then generate TOC (only for desktop)
             setTimeout(() => {
-              console.log('🔄 Regenerating TOC after content load...');
-              
-              // Debug: Check what headings exist in the DOM
-              const allHeadings = postContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
-              console.log('🔍 Found headings after markdown parsing:', 
-                Array.from(allHeadings).map((h, i) => ({
-                  index: i,
-                  tagName: h.tagName,
-                  id: h.id || 'NO-ID',
-                  textContent: h.textContent.trim(),
-                  innerHTML: h.innerHTML.trim()
-                }))
-              );
-              
-              this.generateTOC();
-              
-              // Force a TOC highlight update
-              setTimeout(() => {
-                this.updateTOCHighlight();
-              }, 50);
+              if (currentBreakpoint !== 'mobile') {
+                console.log('🔄 Regenerating TOC after content load...');
+                
+                // Debug: Check what headings exist in the DOM
+                const allHeadings = contentElement.querySelectorAll('h1, h2, h3, h4, h5, h6');
+                console.log('🔍 Found headings after markdown parsing:', 
+                  Array.from(allHeadings).map((h, i) => ({
+                    index: i,
+                    tagName: h.tagName,
+                    id: h.id || 'NO-ID',
+                    textContent: h.textContent.trim(),
+                    innerHTML: h.innerHTML.trim()
+                  }))
+                );
+                
+                this.generateTOC();
+                
+                // Force a TOC highlight update
+                setTimeout(() => {
+                  this.updateTOCHighlight();
+                }, 50);
+              }
             }, 100);
             
-            this.scrollToTop();
+            // Scroll to top (mobile content area or window)
+            if (currentBreakpoint === 'mobile') {
+              const mobileContentArea = document.getElementById('mobileContent');
+              if (mobileContentArea) {
+                mobileContentArea.scrollTop = 0;
+              }
+            } else {
+              this.scrollToTop();
+            }
+            
             document.title = `${title} - AD Tech Blog`;
             console.log('✅ Post loaded successfully:', title);
             
@@ -543,7 +580,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(err => {
           clearTimeout(timeoutId);
           console.error('❌ Error loading post:', err);
-          this.showContentError(err, () => this.loadPost(path, title));
+          this.showContentError(err, () => this.fetchAndRenderContent(path, title, contentElement));
         });
     }
     
@@ -1241,10 +1278,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
       
-      if (sidebarOffcanvas) {
-        const offcanvas = bootstrap.Offcanvas.getInstance(sidebarOffcanvas);
-        if (offcanvas && offcanvas._isShown) {
-          offcanvas.hide();
+      // Handle mobile content area escape - close mobile content view
+      if (currentBreakpoint === 'mobile') {
+        const mobileContentArea = document.getElementById('mobileContent');
+        if (mobileContentArea && mobileContentArea.style.display !== 'none') {
+          mobileContentArea.style.display = 'none';
           return;
         }
       }
