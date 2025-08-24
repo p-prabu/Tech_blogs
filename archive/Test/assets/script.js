@@ -67,10 +67,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  fetch("assets/posts.yml")
-    .then(res => res.text())
-    .then(yamlText => {
-      const posts = jsyaml.load(yamlText);
+  fetch("assets/posts.json")
+    .then(res => res.json())
+    .then(posts => {
       postsByCategory = posts.reduce((acc, post) => {
         if (!acc[post.category]) acc[post.category] = [];
         acc[post.category].push(post);

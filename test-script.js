@@ -7,12 +7,10 @@ console.log('🧪 Starting comprehensive test suite...');
 function testLibraries() {
     console.log('\n📚 Testing libraries...');
     const markedLoaded = typeof marked !== 'undefined';
-    const yamlLoaded = typeof jsyaml !== 'undefined';
-    
+
     console.log('marked.js:', markedLoaded ? '✅' : '❌');
-    console.log('js-yaml:', yamlLoaded ? '✅' : '❌');
-    
-    return markedLoaded && yamlLoaded;
+
+    return markedLoaded;
 }
 
 // Test 2: Check DOM elements
@@ -31,27 +29,24 @@ function testDOMElements() {
     return Object.values(elements).every(el => el !== null);
 }
 
-// Test 3: Test YAML loading
-async function testYAMLLoading() {
-    console.log('\n📄 Testing YAML loading...');
+// Test 3: Test posts JSON loading
+async function testPostsLoading() {
+    console.log('\n📄 Testing posts JSON loading...');
     try {
-        const response = await fetch('assets/posts.yml');
+        const response = await fetch('assets/posts.json');
         console.log('Fetch response:', response.status, response.statusText);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
         }
-        
-        const yamlText = await response.text();
-        console.log('YAML text length:', yamlText.length);
-        
-        const posts = jsyaml.load(yamlText);
+
+        const posts = await response.json();
         console.log('Posts loaded:', posts.length);
         console.log('Sample post:', posts[0]);
-        
+
         return posts;
     } catch (error) {
-        console.error('YAML loading failed:', error);
+        console.error('Posts loading failed:', error);
         return null;
     }
 }
@@ -121,7 +116,7 @@ async function runAllTests() {
     const results = {
         libraries: testLibraries(),
         domElements: testDOMElements(),
-        yaml: await testYAMLLoading(),
+        posts: await testPostsLoading(),
         postLoading: await testPostLoading(),
         layoutManager: testLayoutManager(),
         manualLoad: await testManualPostLoad()

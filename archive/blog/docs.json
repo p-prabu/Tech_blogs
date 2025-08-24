@@ -1,0 +1,33 @@
+[
+  {
+    "category": "Getting Started",
+    "posts": [
+      {
+        "title": "Welcome to My Blog",
+        "file": "posts/welcome.md"
+      }
+    ]
+  },
+  {
+    "category": "PowerShell",
+    "posts": [
+      {
+        "title": "PowerShell Tips & Tricks",
+        "file": "posts/powershell-tips.md"
+      }
+    ]
+  },
+  {
+    "category": "Active Directory",
+    "posts": [
+      {
+        "title": "Securing AD in 2025",
+        "file": "posts/ad-security.md"
+      },
+      {
+        "title": "Az Password Protection",
+        "file": "posts/azpassword-protection.md"
+      }
+    ]
+  }
+]

@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-  async function loadYAML() {
-    const res = await fetch('docs.yml');
-    const yamlText = await res.text();
-    const data = jsyaml.load(yamlText);
+  async function loadJSON() {
+    const res = await fetch('docs.json');
+    const data = await res.json();
     const categoryList = document.getElementById('categoryList');
 
     data.forEach(category => {
@@ -62,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  loadYAML();
+  loadJSON();
 
   document.getElementById('toggleSidebar').addEventListener('click', () => {
     const list = document.getElementById('categoryList');
