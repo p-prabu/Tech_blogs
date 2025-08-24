@@ -1,4 +1,4 @@
-# 🧠 Mental Pictures for Active Directory Concepts
+# Mental Pictures for Active Directory Concepts
 
 ## 1. Group Policy  
 🕹️ **"Remote Control for Computers"**  
