@@ -188,5 +188,10 @@
     "title": "Advanced AD Commmands",
     "path": "posts/Admin-Commands-Advanced.md",
     "category": "Active Directory"
+  },
+  {
+    "title": "Mental Picture of Active Directory",
+    "path": "posts/ad_mental_pictures.md",
+    "category": "Active Directory"
   }
 ]
