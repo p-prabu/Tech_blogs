@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Auto-Scroll Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #0d6efd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .test-header {
+            color: #0d6efd;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        .test-steps {
+            background-color: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: white;
+            border-left: 4px solid #0d6efd;
+            border-radius: 4px;
+        }
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            border: 3px solid #000;
+            border-radius: 20px;
+            margin: 20px auto;
+            overflow: hidden;
+            background-color: #000;
+            padding: 5px;
+        }
+        .mobile-screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .success-indicator {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #badbcc;
+        }
+        .instruction {
+            background-color: #fff3cd;
+            color: #664d03;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 1px solid #ffecb5;
+        }
+        .checkmark {
+            color: #198754;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Mobile Auto-Scroll Test Page</h1>
+    
+    <div class="instruction">
+        <strong>📋 Testing Instructions:</strong> This page tests the new mobile auto-scroll feature. 
+        When you select a topic on mobile, the content should automatically scroll to the top.
+    </div>
+
+    <div class="test-section">
+        <div class="test-header">🧪 Test Case 1: Topic Selection Auto-Scroll</div>
+        
+        <div class="test-steps">
+            <div class="step">
+                <strong>Step 1:</strong> Open the mobile frame below (simulates mobile device)
+            </div>
+            <div class="step">
+                <strong>Step 2:</strong> Scroll down in the topics list to see multiple topics
+            </div>
+            <div class="step">
+                <strong>Step 3:</strong> Click on any topic card
+            </div>
+            <div class="step">
+                <strong>Expected Result:</strong> <span class="checkmark">✓</span> Content area should automatically scroll to top, showing the article title immediately
+            </div>
+        </div>
+        
+        <div class="mobile-frame">
+            <div class="mobile-screen">
+                <iframe src="http://localhost:9001" frameborder="0"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-header">🔍 Test Case 2: Search Result Auto-Scroll</div>
+        
+        <div class="test-steps">
+            <div class="step">
+                <strong>Step 1:</strong> In the mobile frame, use the search box to search for "active"
+            </div>
+            <div class="step">
+                <strong>Step 2:</strong> Scroll down to see the search results
+            </div>
+            <div class="step">
+                <strong>Step 3:</strong> Click on any search result
+            </div>
+            <div class="step">
+                <strong>Expected Result:</strong> <span class="checkmark">✓</span> Content should load and auto-scroll to top immediately
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <div class="test-header">🔄 Test Case 3: Navigation Flow</div>
+        
+        <div class="test-steps">
+            <div class="step">
+                <strong>Step 1:</strong> Select a topic and verify auto-scroll works
+            </div>
+            <div class="step">
+                <strong>Step 2:</strong> Click the "Back" button to return to topics
+            </div>
+            <div class="step">
+                <strong>Step 3:</strong> Select a different topic
+            </div>
+            <div class="step">
+                <strong>Expected Result:</strong> <span class="checkmark">✓</span> Each topic selection should trigger auto-scroll to top
+            </div>
+        </div>
+    </div>
+
+    <div class="success-indicator">
+        <strong>🎯 Success Criteria:</strong>
+        <ul>
+            <li>No manual scrolling required after topic selection</li>
+            <li>Article content is immediately visible at the top</li>
+            <li>Smooth user experience from topic selection to reading</li>
+            <li>Works for both browsed topics and search results</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <div class="test-header">🖥️ Desktop Comparison Test</div>
+        <p>Test the same functionality in desktop view to ensure auto-scroll only affects mobile:</p>
+        <iframe src="http://localhost:9001" style="width: 100%; height: 600px; border: 2px solid #dee2e6; border-radius: 8px;"></iframe>
+    </div>
+
+    <div class="test-section">
+        <div class="test-header">📊 Technical Validation</div>
+        <div class="test-steps">
+            <div class="step">
+                <strong>Open Browser Developer Tools:</strong> Check console for auto-scroll messages
+            </div>
+            <div class="step">
+                <strong>Look for:</strong> "📱 Auto-scrolling mobile content to top" and "✅ Mobile content auto-scroll completed"
+            </div>
+            <div class="step">
+                <strong>Verify:</strong> No JavaScript errors during topic selection
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

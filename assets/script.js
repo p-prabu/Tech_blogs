@@ -441,6 +441,9 @@ document.addEventListener("DOMContentLoaded", function () {
       // Show mobile content area
       mobileContentArea.style.display = 'flex';
       
+      // Auto-scroll to top immediately when mobile content is shown
+      this.scrollMobileContentToTop();
+      
       // Set title
       if (mobileContentTitle) {
         mobileContentTitle.textContent = title;
@@ -925,6 +928,27 @@ document.addEventListener("DOMContentLoaded", function () {
       if (searchInput) {
         searchInput.value = '';
         this.renderCategoryList();
+      }
+    }
+
+    // Mobile auto-scroll functionality
+    scrollMobileContentToTop() {
+      console.log('📱 Auto-scrolling mobile content to top');
+      const mobileContentArea = document.getElementById('mobileContent');
+      
+      if (mobileContentArea) {
+        // Immediate scroll for responsive feedback
+        mobileContentArea.scrollTop = 0;
+        
+        // Also ensure window is at top (fallback)
+        window.scrollTo({
+          top: 0,
+          behavior: 'instant'
+        });
+        
+        console.log('✅ Mobile content auto-scroll completed');
+      } else {
+        console.warn('⚠️ Mobile content area not found for auto-scroll');
       }
     }
 
