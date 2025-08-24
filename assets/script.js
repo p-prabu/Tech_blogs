@@ -430,6 +430,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const mobilePostContent = document.getElementById('mobilePostContent');
       const mobileContentTitle = document.getElementById('mobileContentTitle');
       const mobileBackButton = document.getElementById('mobileBackButton');
+      const mobileBottomBackButton = document.getElementById('mobileBottomBackButton');
+      const mobileTopicsSection = document.getElementById('mobileTopicsSection');
       
       if (!mobileContentArea || !mobilePostContent) {
         console.error('❌ Mobile content elements not found');
@@ -444,13 +446,20 @@ document.addEventListener("DOMContentLoaded", function () {
         mobileContentTitle.textContent = title;
       }
       
-      // Setup back button
+      // Setup back button functionality (both top and bottom)
+      const backToTopics = () => {
+        console.log('📱 Mobile back button clicked');
+        mobileContentArea.style.display = 'none';
+        window.scrollTo(0, 0);
+      };
+      
+      // Bind both back buttons
       if (mobileBackButton) {
-        mobileBackButton.onclick = () => {
-          console.log('📱 Mobile back button clicked');
-          mobileContentArea.style.display = 'none';
-          window.scrollTo(0, 0);
-        };
+        mobileBackButton.onclick = backToTopics;
+      }
+      
+      if (mobileBottomBackButton) {
+        mobileBottomBackButton.onclick = backToTopics;
       }
       
       // Show loading in mobile content area
@@ -463,8 +472,11 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
       `;
       
+      // Load article content
       this.fetchAndRenderContent(path, title, mobilePostContent);
     }
+    
+
     
     loadDesktopContent(path, title) {
       console.log('🖥️ Loading desktop content:', { path, title });
