@@ -23,42 +23,70 @@
     </div>
   </header>
 
-  <!-- Enhanced Sidebar with Offcanvas -->
-  <nav class="col-lg-3 col-xl-2 d-lg-block sidebar-nav offcanvas-lg offcanvas-start" id="sidebarOffcanvas" tabindex="-1">
+  <!-- Enhanced Sidebar with Topics -->
+  <nav class="sidebar-nav offcanvas-lg offcanvas-start" id="sidebarOffcanvas" tabindex="-1">
         <div class="offcanvas-header d-lg-none">
           <h5 class="offcanvas-title text-primary fw-bold">Navigation</h5>
           <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarOffcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body sidebar-content p-0">
-          <div class="search-container p-3">
+          <!-- Desktop Toggle Button -->
+          <div class="desktop-toggle-container d-none d-lg-block">
+            <button class="btn btn-outline-primary btn-sm" id="desktopMenuToggle" aria-label="Toggle sidebar">
+              <i class="bi bi-list fs-5"></i>
+            </button>
+          </div>
+          
+          <div class="search-container">
+            <div class="search-header mb-2">
+              <h6 class="text-primary fw-bold mb-1">🔍 Search Topics</h6>
+            </div>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control" id="searchInput" placeholder="Search topics..." />
+              <input type="text" class="form-control" id="searchInput" placeholder="Search Active Directory topics..." />
             </div>
           </div>
-          <div class="nav-container px-3 pb-3">
+          <div class="nav-container">
+            <div class="topics-header">
+              <h6 class="text-primary fw-bold">📚 Browse Topics</h6>
+            </div>
             <ul class="nav flex-column nav-pills" id="categoryList"></ul>
           </div>
         </div>
   </nav>
 
-  <!-- Main Content Area -->
-  <main class="col-lg-6 col-xl-7 main-content">
+  <!-- Main Content Area for Desktop -->
+  <main class="content-area d-none d-lg-block" id="contentArea">
         <article id="postContent" class="content-wrapper">
           <div class="welcome-content text-center py-5">
             <h1 class="display-4 fw-bold text-primary mb-4">Welcome to AD Tech Blog 👋</h1>
-            <p class="lead text-muted">Your comprehensive guide to Active Directory, PowerShell automation, and enterprise identity management.</p>
-            <div class="mt-4">
-              <button class="btn btn-primary d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
-                <i class="bi bi-book me-2"></i>Browse Topics
-              </button>
+            <p class="lead text-muted mb-4">Your comprehensive guide to Active Directory, PowerShell automation, and enterprise identity management.</p>
+            <div class="info-cards row g-3">
+              <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                  <div class="card-body text-center">
+                    <i class="bi bi-search fs-2 text-primary mb-3"></i>
+                    <h5 class="card-title">Search Topics</h5>
+                    <p class="card-text text-muted">Use the search box above to find specific AD topics quickly.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                  <div class="card-body text-center">
+                    <i class="bi bi-book fs-2 text-success mb-3"></i>
+                    <h5 class="card-title">Browse Categories</h5>
+                    <p class="card-text text-muted">Explore topics organized by Active Directory concepts and tools.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </article>
   </main>
 
   <!-- Table of Contents Panel -->
-  <aside class="col-lg-3 col-xl-3 d-none d-lg-block toc-panel" id="tocPanel">
+  <aside class="toc-panel d-none d-lg-block" id="tocPanel">
         <div class="toc-wrapper">
           <div class="toc-header">
             <h5 class="fw-bold text-primary">📌 Table of Contents</h5>
@@ -66,6 +94,26 @@
           <nav id="tocList" class="toc-nav"></nav>
         </div>
   </aside>
+
+  <!-- Floating Sidebar Toggle Button (visible when sidebar is collapsed) -->
+  <button class="floating-sidebar-toggle d-none d-lg-block" id="floatingSidebarToggle" aria-label="Show sidebar">
+    <i class="bi bi-arrow-right"></i>
+  </button>
+
+  <!-- Hidden main content for mobile -->
+  <main class="main-content d-lg-none" id="mobileContent">
+        <article id="postContent" class="content-wrapper">
+          <div class="welcome-content text-center py-5">
+            <h1 class="display-4 fw-bold text-primary mb-4">Welcome to AD Tech Blog 👋</h1>
+            <p class="lead text-muted">Your comprehensive guide to Active Directory, PowerShell automation, and enterprise identity management.</p>
+            <div class="mt-4">
+              <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+                <i class="bi bi-book me-2"></i>Browse Topics
+              </button>
+            </div>
+          </div>
+        </article>
+  </main>
 
   <!-- Mobile TOC Modal -->
   <div class="modal fade" id="mobileTOCModal" tabindex="-1" aria-labelledby="mobileTOCModalLabel" aria-hidden="true">

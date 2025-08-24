@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const mobileTOCFab = document.getElementById("mobileTOCFab");
   const sidebarOffcanvas = document.getElementById("sidebarOffcanvas");
   const mobileTOCModal = document.getElementById("mobileTOCModal");
+  const desktopMenuToggle = document.getElementById("desktopMenuToggle");
+  const floatingSidebarToggle = document.getElementById("floatingSidebarToggle");
+  const layoutContainer = document.querySelector('.layout-container');
 
   // Verify critical elements exist
   console.log('🔍 Checking DOM elements...');
@@ -109,19 +112,62 @@ document.addEventListener("DOMContentLoaded", function () {
         });
       }
 
+      // Desktop sidebar toggle functionality
+      const toggleSidebar = () => {
+        console.log('🖥️ Desktop sidebar toggle clicked');
+        layoutContainer.classList.toggle('sidebar-collapsed');
+        
+        // Update button icon based on state
+        const icon = desktopMenuToggle?.querySelector('i');
+        if (layoutContainer.classList.contains('sidebar-collapsed')) {
+          if (icon) icon.className = 'bi bi-arrow-right fs-5';
+          if (desktopMenuToggle) desktopMenuToggle.setAttribute('aria-label', 'Show sidebar');
+        } else {
+          if (icon) icon.className = 'bi bi-list fs-5';
+          if (desktopMenuToggle) desktopMenuToggle.setAttribute('aria-label', 'Hide sidebar');
+        }
+        
+        // Force layout recalculation to ensure proper content expansion
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 350); // After transition completes
+      };
+
+      // Desktop sidebar toggle (inside sidebar)
+      if (desktopMenuToggle && layoutContainer) {
+        desktopMenuToggle.addEventListener('click', toggleSidebar);
+      }
+
+      // Floating sidebar toggle (always visible when collapsed)
+      if (floatingSidebarToggle && layoutContainer) {
+        floatingSidebarToggle.addEventListener('click', toggleSidebar);
+      }
+
       // Category list click handling (delegated event listener)
       if (categoryList) {
         categoryList.addEventListener('click', (e) => {
           console.log('🖱️ Category list clicked:', e.target);
           
-          if (e.target.classList.contains('nav-link')) {
+          // Find the topic card (could be the clicked element or a parent)
+          let topicCard = e.target;
+          if (!topicCard.classList.contains('topic-card')) {
+            topicCard = e.target.closest('.topic-card');
+          }
+          
+          if (topicCard && topicCard.classList.contains('topic-card')) {
             e.preventDefault();
-            const postPath = e.target.dataset.path;
-            const postTitle = e.target.dataset.title;
+            const postPath = topicCard.dataset.path;
+            const postTitle = topicCard.dataset.title;
             
-            console.log('🖱️ Nav link clicked:', { postPath, postTitle });
+            console.log('🖱️ Topic card clicked:', { postPath, postTitle });
             
             if (postPath && postTitle) {
+              // Update active state
+              document.querySelectorAll('.topic-card').forEach(card => {
+                card.classList.remove('active');
+              });
+              topicCard.classList.add('active');
+              
               this.loadPost(postPath, postTitle);
               
               // Auto-close sidebar on mobile
@@ -141,15 +187,39 @@ document.addEventListener("DOMContentLoaded", function () {
       // Mobile TOC handling
       if (mobileTocList) {
         mobileTocList.addEventListener('click', (e) => {
+          console.log('📱 Mobile TOC clicked:', e.target);
+          
           if (e.target.tagName === 'A') {
             e.preventDefault();
             const targetId = e.target.getAttribute('href').substring(1);
+            console.log('🎯 Mobile target ID:', targetId);
+            
             const targetElement = document.getElementById(targetId);
             
             if (targetElement) {
               this.scrollToElement(targetElement);
               const modal = bootstrap.Modal.getInstance(mobileTOCModal);
               if (modal) modal.hide();
+            } else {
+              console.error('❌ Mobile TOC: Target element not found for ID:', targetId);
+              
+              // Try to find by text content as fallback
+              const linkText = e.target.textContent.trim();
+              const allHeaders = postContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+              const matchingHeader = Array.from(allHeaders).find(h => 
+                h.textContent.trim() === linkText
+              );
+              
+              if (matchingHeader) {
+                console.log('🎆 Mobile: Found matching header by text!');
+                if (!matchingHeader.id) {
+                  const newId = this.createHeadingId(matchingHeader.textContent, Array.from(allHeaders).indexOf(matchingHeader));
+                  matchingHeader.id = newId;
+                }
+                this.scrollToElement(matchingHeader);
+                const modal = bootstrap.Modal.getInstance(mobileTOCModal);
+                if (modal) modal.hide();
+              }
             }
           }
         });
@@ -157,13 +227,90 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Desktop TOC handling
       if (tocList) {
+        console.log('🔧 Setting up desktop TOC event listener');
+        
         tocList.addEventListener('click', (e) => {
+          const sidebarCollapsed = layoutContainer.classList.contains('sidebar-collapsed');
+          console.log('🖇 Desktop TOC clicked:', {
+            target: e.target.tagName,
+            sidebarCollapsed: sidebarCollapsed,
+            currentBreakpoint: currentBreakpoint,
+            tocListVisible: tocList.offsetParent !== null,
+            tocListBounds: tocList.getBoundingClientRect(),
+            layoutContainerClass: layoutContainer.className
+          });
+          
           if (e.target.tagName === 'A') {
             e.preventDefault();
+            e.stopPropagation();
+            
             const targetId = e.target.getAttribute('href').substring(1);
+            console.log('🎯 Target ID from TOC link:', targetId);
+            
             const targetElement = document.getElementById(targetId);
-            if (targetElement) this.scrollToElement(targetElement);
+            console.log('📋 Target element found:', targetElement);
+            
+            if (targetElement) {
+              console.log('✅ Attempting scroll - Layout state:', {
+                sidebarCollapsed: sidebarCollapsed,
+                targetId: targetElement.id,
+                targetTagName: targetElement.tagName,
+                targetText: targetElement.textContent.trim().substring(0, 30)
+              });
+              this.scrollToElement(targetElement);
+            } else {
+              console.error('❌ Target element not found! Available IDs:', 
+                Array.from(document.querySelectorAll('[id]')).map(el => el.id)
+              );
+              
+              // Try alternative search methods
+              const allHeaders = postContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+              console.log('🔍 Available headers:', 
+                Array.from(allHeaders).map((h, i) => ({ 
+                  index: i, 
+                  id: h.id || 'NO-ID', 
+                  tag: h.tagName, 
+                  text: h.textContent.trim().substring(0, 30) 
+                }))
+              );
+              
+              // Try to find by text content
+              const linkText = e.target.textContent.trim();
+              const matchingHeader = Array.from(allHeaders).find(h => 
+                h.textContent.trim() === linkText
+              );
+              
+              if (matchingHeader) {
+                console.log('🎆 Found matching header by text content!');
+                // Assign an ID if it doesn't have one
+                if (!matchingHeader.id) {
+                  const newId = this.createHeadingId(matchingHeader.textContent, Array.from(allHeaders).indexOf(matchingHeader));
+                  matchingHeader.id = newId;
+                  console.log('🆔 Assigned new ID to header:', newId);
+                }
+                this.scrollToElement(matchingHeader);
+              } else {
+                console.error('❌ Could not find matching header for:', linkText);
+              }
+            }
+          } else {
+            console.log('⚠️ Clicked element is not a link:', e.target);
           }
+        });
+        
+        // Add debugging for mouse events
+        tocList.addEventListener('mousedown', (e) => {
+          console.log('🖱️ TOC mousedown:', {
+            target: e.target.tagName,
+            sidebarCollapsed: layoutContainer.classList.contains('sidebar-collapsed')
+          });
+        });
+        
+        tocList.addEventListener('mouseup', (e) => {
+          console.log('🖱️ TOC mouseup:', {
+            target: e.target.tagName,
+            sidebarCollapsed: layoutContainer.classList.contains('sidebar-collapsed')
+          });
         });
       }
     }
@@ -227,25 +374,69 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     updateTOCHighlight() {
-      const sections = postContent.querySelectorAll("h2, h3, h4");
-      if (sections.length === 0) return;
+      const sections = postContent.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      if (sections.length === 0) {
+        console.log('🔍 No headers found for TOC highlighting');
+        return;
+      }
 
-      const scrollPosition = window.scrollY + (currentBreakpoint === 'mobile' ? 120 : 80);
+      // Calculate offset based on layout
+      const mobileHeaderHeight = 56;
+      const desktopOffset = 100; // Increased for better accuracy
+      const offset = currentBreakpoint === 'mobile' ? mobileHeaderHeight + 50 : desktopOffset;
+      
+      const scrollPosition = window.scrollY + offset;
       const allTocLinks = document.querySelectorAll('#tocList a, #mobileTocList a');
       allTocLinks.forEach(link => link.classList.remove('active'));
 
       let currentSection = null;
-      sections.forEach((section) => {
-        if (section.offsetTop <= scrollPosition) {
+      
+      // Find the current section more accurately
+      for (let i = 0; i < sections.length; i++) {
+        const section = sections[i];
+        const sectionTop = section.offsetTop;
+        const sectionBottom = i < sections.length - 1 ? sections[i + 1].offsetTop : document.body.scrollHeight;
+        
+        // Check if current scroll position is within this section
+        if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
+          currentSection = section;
+          break;
+        }
+        
+        // Fallback: if we're past all sections, highlight the last one
+        if (scrollPosition >= sectionTop) {
           currentSection = section;
         }
-      });
+      }
+      
+      // Special case: if we're at the very bottom of the document, highlight the last section
+      const isAtBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 10);
+      const isAtTop = window.scrollY <= 50;
+      
+      if (isAtBottom && sections.length > 0) {
+        currentSection = sections[sections.length - 1];
+      } else if (isAtTop && sections.length > 0) {
+        // If we're at the top, don't highlight any TOC item
+        currentSection = null;
+      }
 
       if (currentSection && currentSection.id) {
         const currentLinks = document.querySelectorAll(
           `#tocList a[href="#${currentSection.id}"], #mobileTocList a[href="#${currentSection.id}"]`
         );
         currentLinks.forEach(link => link.classList.add('active'));
+        
+        console.log('\ud83d\udccd TOC highlight updated:', {
+          sectionId: currentSection.id,
+          sectionText: currentSection.textContent.trim().substring(0, 50),
+          scrollPosition: window.scrollY,
+          linksFound: currentLinks.length
+        });
+      } else if (currentSection) {
+        console.warn('⚠️ Current section has no ID:', {
+          tagName: currentSection.tagName,
+          text: currentSection.textContent.trim().substring(0, 50)
+        });
       }
     }
 
@@ -293,8 +484,21 @@ document.addEventListener("DOMContentLoaded", function () {
           }
           
           try {
+            console.log('🔄 Configuring marked.js for proper heading ID generation...');
+            
+            // Configure marked.js to generate heading IDs
+            if (typeof marked !== 'undefined' && marked.setOptions) {
+              marked.setOptions({
+                headerIds: true,
+                headerPrefix: '',
+                gfm: true,
+                breaks: true
+              });
+            }
+            
             const htmlContent = marked.parse(markdown);
             console.log('✅ Markdown parsed successfully');
+            console.log('🔍 HTML content length:', htmlContent.length);
             
             postContent.innerHTML = `
               <article class="markdown-body">
@@ -303,7 +507,30 @@ document.addEventListener("DOMContentLoaded", function () {
               </article>
             `;
             
-            this.generateTOC();
+            // Wait a bit for DOM to settle, then generate TOC
+            setTimeout(() => {
+              console.log('🔄 Regenerating TOC after content load...');
+              
+              // Debug: Check what headings exist in the DOM
+              const allHeadings = postContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+              console.log('🔍 Found headings after markdown parsing:', 
+                Array.from(allHeadings).map((h, i) => ({
+                  index: i,
+                  tagName: h.tagName,
+                  id: h.id || 'NO-ID',
+                  textContent: h.textContent.trim(),
+                  innerHTML: h.innerHTML.trim()
+                }))
+              );
+              
+              this.generateTOC();
+              
+              // Force a TOC highlight update
+              setTimeout(() => {
+                this.updateTOCHighlight();
+              }, 50);
+            }, 100);
+            
             this.scrollToTop();
             document.title = `${title} - AD Tech Blog`;
             console.log('✅ Post loaded successfully:', title);
@@ -347,14 +574,31 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     generateTOC() {
-      if (!tocList) return;
+      console.log('🔧 Generating TOC...');
+      if (!tocList) {
+        console.warn('⚠️ TOC list element not found');
+        return;
+      }
+      
       tocList.innerHTML = "";
       if (mobileTocList) mobileTocList.innerHTML = "";
       
-      const headers = postContent.querySelectorAll("h2, h3, h4");
+      const headers = postContent.querySelectorAll("h1, h2, h3, h4, h5, h6");
+      console.log(`📋 Found ${headers.length} headers for TOC:`);
+      
       headers.forEach((header, index) => {
-        const id = `heading-${index}`;
-        header.id = id;
+        let id;
+        
+        // Check if header already has an ID (from markdown parser like marked.js)
+        if (header.id && header.id.trim() !== '') {
+          id = header.id;
+          console.log(`📌 Using existing header ID: "${id}" for "${header.textContent.trim()}"`);
+        } else {
+          // Create a meaningful ID from the header text
+          id = this.createHeadingId(header.textContent, index);
+          header.id = id;
+          console.log(`🆔 Assigned new header ID: "${id}" for "${header.textContent.trim()}"`);
+        }
         
         const level = parseInt(header.tagName.substring(1));
         const indent = level > 2 ? 'ms-3' : '';
@@ -366,9 +610,66 @@ document.addEventListener("DOMContentLoaded", function () {
           const mobileTocItem = this.createTOCItem(header.textContent, id, indent);
           mobileTocList.appendChild(mobileTocItem);
         }
+        
+        console.log(`🔗 TOC item created:`, {
+          text: header.textContent.trim().substring(0, 40) + '...',
+          id: id,
+          href: `#${id}`,
+          level: level
+        });
+      });
+      
+      console.log(`✅ TOC generated with ${headers.length} items`);
+      
+      // Verify all TOC links have valid targets
+      const tocLinks = tocList.querySelectorAll('a[href^="#"]');
+      tocLinks.forEach(link => {
+        const targetId = link.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (!targetElement) {
+          console.error(`❌ TOC link has no target: ${link.textContent} -> #${targetId}`);
+        } else {
+          console.log(`✅ TOC link verified: ${link.textContent.substring(0, 30)}... -> #${targetId}`);
+        }
       });
       
       this.updateTOCVisibility();
+    }
+
+    createHeadingId(text, index) {
+      console.log(`🆔 Creating ID for text: "${text}"`);
+      
+      // Clean the text to create a URL-friendly ID
+      let id = text
+        .toLowerCase()
+        .trim()
+        // Handle numbered lists like "6) Rebuild topology"
+        .replace(/^\d+\)\s*/, '') // Remove leading numbers with parenthesis
+        .replace(/^\d+\.\s*/, '') // Remove leading numbers with period
+        .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+        .replace(/[\s_]+/g, '-') // Replace spaces and underscores with hyphens
+        .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+        .substring(0, 50); // Limit length
+      
+      console.log(`🔧 Cleaned text for ID: "${id}"`);
+      
+      // If the ID is empty or too short, use a fallback
+      if (!id || id.length < 2) {
+        id = `heading-${index}`;
+        console.log(`⚠️ Using fallback ID: "${id}"`);
+      }
+      
+      // Ensure uniqueness by checking if ID already exists
+      let finalId = id;
+      let counter = 1;
+      while (document.getElementById(finalId)) {
+        finalId = `${id}-${counter}`;
+        counter++;
+        console.log(`🔄 ID conflict, trying: "${finalId}"`);
+      }
+      
+      console.log(`✅ Final ID created: "${finalId}"`);
+      return finalId;
     }
 
     createTOCItem(text, id, className = '') {
@@ -380,9 +681,191 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     scrollToElement(element) {
-      const offset = currentBreakpoint === 'mobile' ? 80 : 60;
-      const elementPosition = element.offsetTop - offset;
-      window.scrollTo({ top: elementPosition, behavior: 'smooth' });
+      if (!element) {
+        console.error('❌ scrollToElement: No element provided');
+        return;
+      }
+      
+      const sidebarCollapsed = layoutContainer.classList.contains('sidebar-collapsed');
+      console.log(`🎯 Starting scroll to element - Layout state:`, {
+        id: element.id,
+        tagName: element.tagName,
+        textContent: element.textContent.trim().substring(0, 50) + '...',
+        sidebarCollapsed: sidebarCollapsed,
+        currentBreakpoint: currentBreakpoint,
+        layoutClasses: layoutContainer.className,
+        contentAreaVisible: document.querySelector('.content-area')?.offsetParent !== null,
+        elementVisible: element.offsetParent !== null,
+        elementBounds: element.getBoundingClientRect()
+      });
+      
+      // Calculate precise offsets based on layout and device
+      const isMobile = currentBreakpoint === 'mobile';
+      const isTablet = currentBreakpoint === 'tablet';
+      
+      let offset;
+      if (isMobile) {
+        offset = 70; // Mobile header + some padding
+      } else if (isTablet) {
+        offset = 60; // Tablet offset
+      } else {
+        offset = 40; // Desktop offset
+      }
+      
+      // Get precise element position
+      const elementRect = element.getBoundingClientRect();
+      const elementTop = window.scrollY + elementRect.top;
+      
+      console.log(`📏 Element position info:`, {
+        elementRect: {
+          top: elementRect.top,
+          bottom: elementRect.bottom,
+          height: elementRect.height,
+          left: elementRect.left,
+          right: elementRect.right,
+          width: elementRect.width
+        },
+        currentScrollY: window.scrollY,
+        elementTop: elementTop,
+        offset: offset,
+        sidebarCollapsed: sidebarCollapsed
+      });
+      
+      // Calculate target scroll position
+      let targetScrollPosition = elementTop - offset;
+      
+      // Get document boundaries to prevent over-scrolling
+      const documentHeight = Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.clientHeight,
+        document.documentElement.scrollHeight,
+        document.documentElement.offsetHeight
+      );
+      const viewportHeight = window.innerHeight;
+      const maxScrollPosition = Math.max(0, documentHeight - viewportHeight);
+      
+      // Clamp the target position within valid bounds
+      targetScrollPosition = Math.min(targetScrollPosition, maxScrollPosition);
+      targetScrollPosition = Math.max(0, targetScrollPosition);
+      
+      console.log(`🎢 Scroll calculation:`, {
+        documentHeight,
+        viewportHeight,
+        maxScrollPosition,
+        targetScrollPosition,
+        willScroll: Math.abs(window.scrollY - targetScrollPosition) > 5,
+        sidebarCollapsed: sidebarCollapsed,
+        documentScrollingElement: document.scrollingElement,
+        bodyScrollHeight: document.body.scrollHeight,
+        htmlScrollHeight: document.documentElement.scrollHeight
+      });
+      
+      // Only scroll if there's a meaningful difference
+      if (Math.abs(window.scrollY - targetScrollPosition) <= 5) {
+        console.log('🚫 Already at target position, skipping scroll');
+        this.highlightTargetElement(element);
+        return;
+      }
+      
+      // Determine the correct scroll container
+      let scrollContainer = window;
+      let scrollElement = document.scrollingElement || document.documentElement;
+      
+      // Check if we're in a layout where content area might be the scroll container
+      const contentArea = document.querySelector('.content-area');
+      if (!sidebarCollapsed && contentArea && currentBreakpoint === 'desktop') {
+        // When sidebar is expanded, content might be in its own scroll container
+        const contentRect = contentArea.getBoundingClientRect();
+        const elementInContent = element.closest('.content-area');
+        
+        console.log('📏 Checking scroll containers:', {
+          contentAreaExists: !!contentArea,
+          elementInContent: !!elementInContent,
+          contentAreaScrollable: contentArea.scrollHeight > contentArea.clientHeight,
+          contentAreaRect: contentRect
+        });
+        
+        if (elementInContent && contentArea.scrollHeight > contentArea.clientHeight) {
+          console.log('📊 Using content area as scroll container');
+          scrollContainer = contentArea;
+          scrollElement = contentArea;
+          // Recalculate position relative to content area
+          const contentAreaTop = contentArea.getBoundingClientRect().top + window.scrollY;
+          targetScrollPosition = elementTop - contentAreaTop - offset;
+          targetScrollPosition = Math.max(0, Math.min(targetScrollPosition, contentArea.scrollHeight - contentArea.clientHeight));
+        }
+      }
+      
+      // Perform the smooth scroll
+      console.log(`⬆️ Scrolling from ${scrollContainer === window ? window.scrollY : scrollContainer.scrollTop} to ${targetScrollPosition} using container:`, scrollContainer === window ? 'window' : 'content-area');
+      
+      // Use different scrolling methods based on container
+      if (scrollContainer === window) {
+        // Use requestAnimationFrame for smoother scrolling on window
+        const startY = window.scrollY;
+        const distance = targetScrollPosition - startY;
+        const duration = Math.min(800, Math.max(300, Math.abs(distance) * 0.5)); // Dynamic duration
+        let startTime = null;
+        
+        function animateScroll(currentTime) {
+          if (startTime === null) startTime = currentTime;
+          const timeElapsed = currentTime - startTime;
+          const progress = Math.min(timeElapsed / duration, 1);
+          
+          // Easing function for smooth animation
+          const easeInOutCubic = progress < 0.5 
+            ? 4 * progress * progress * progress 
+            : (progress - 1) * (2 * progress - 2) * (2 * progress - 2) + 1;
+          
+          const currentPosition = startY + (distance * easeInOutCubic);
+          window.scrollTo(0, currentPosition);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+          } else {
+            console.log('✅ Window scroll animation completed');
+            setTimeout(() => {
+              this.highlightTargetElement(element);
+              this.updateTOCHighlight();
+            }, 50);
+          }
+        }
+        
+        requestAnimationFrame(animateScroll);
+      } else {
+        // Scroll the content area directly
+        console.log('📊 Scrolling content area to:', targetScrollPosition);
+        scrollContainer.scrollTo({
+          top: targetScrollPosition,
+          behavior: 'smooth'
+        });
+        
+        setTimeout(() => {
+          console.log('✅ Content area scroll completed');
+          this.highlightTargetElement(element);
+          this.updateTOCHighlight();
+        }, 500);
+      }
+    }
+    
+    highlightTargetElement(element) {
+      if (!element) return;
+      
+      console.log(`✨ Highlighting target element: ${element.id}`);
+      
+      // Remove any existing highlight classes
+      document.querySelectorAll('.toc-target-highlight').forEach(el => {
+        el.classList.remove('toc-target-highlight');
+      });
+      
+      // Add highlight class to target
+      element.classList.add('toc-target-highlight');
+      
+      // Remove highlight after animation
+      setTimeout(() => {
+        element.classList.remove('toc-target-highlight');
+      }, 3000);
     }
 
     scrollToTop() {
@@ -396,8 +879,97 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    renderCategoryList() {
-      console.log('🎨 Rendering category list...');
+    // Cache for post descriptions to avoid repeated fetches
+    descriptionCache = new Map();
+
+    async getPostDescription(postPath) {
+      // Check cache first
+      if (this.descriptionCache.has(postPath)) {
+        return this.descriptionCache.get(postPath);
+      }
+
+      try {
+        const response = await fetch(postPath);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${postPath}`);
+        }
+        
+        const content = await response.text();
+        
+        // Extract first meaningful paragraph (skip headers and empty lines)
+        const lines = content.split('\n');
+        let description = '';
+        let foundContent = false;
+        
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          
+          // Skip empty lines, headers, and markdown metadata
+          if (!trimmedLine || 
+              trimmedLine.startsWith('#') || 
+              trimmedLine.startsWith('---') ||
+              trimmedLine.startsWith('title:') ||
+              trimmedLine.startsWith('date:') ||
+              trimmedLine.startsWith('author:')) {
+            continue;
+          }
+          
+          // Found meaningful content
+          if (!foundContent) {
+            foundContent = true;
+            description = trimmedLine;
+          } else if (description.length < 100) {
+            // Add more content if we haven't reached a good length yet
+            description += ' ' + trimmedLine;
+          } else {
+            break;
+          }
+          
+          // Stop if we have enough content
+          if (description.length > 150) {
+            break;
+          }
+        }
+        
+        // Clean up markdown syntax and truncate
+        description = description
+          .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+          .replace(/\*(.*?)\*/g, '$1') // Remove italic
+          .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
+          .replace(/`(.*?)`/g, '$1') // Remove inline code
+          .replace(/#{1,6}\s+/g, '') // Remove headers
+          .trim();
+        
+        // Truncate to reasonable length
+        if (description.length > 120) {
+          description = description.substring(0, 120).trim();
+          // Try to end at a word boundary
+          const lastSpace = description.lastIndexOf(' ');
+          if (lastSpace > 80) {
+            description = description.substring(0, lastSpace);
+          }
+          description += '...';
+        }
+        
+        // Fallback if no description found
+        if (!description) {
+          description = 'Click to learn more about this topic.';
+        }
+        
+        // Cache the result
+        this.descriptionCache.set(postPath, description);
+        return description;
+        
+      } catch (error) {
+        console.warn(`⚠️ Could not fetch description for ${postPath}:`, error);
+        const fallbackDescription = 'Click to learn more about this Active Directory topic.';
+        this.descriptionCache.set(postPath, fallbackDescription);
+        return fallbackDescription;
+      }
+    }
+
+    async renderCategoryList() {
+      console.log('🎨 Rendering enhanced category list...');
       console.log('categoryList element:', categoryList);
       console.log('postsByCategory:', postsByCategory);
       
@@ -417,7 +989,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       
       let totalPosts = 0;
-      categories.forEach(category => {
+      for (const category of categories) {
         const posts = postsByCategory[category];
         console.log(`📁 Category "${category}" has ${posts.length} posts:`, posts);
         totalPosts += posts.length;
@@ -433,35 +1005,44 @@ document.addEventListener("DOMContentLoaded", function () {
         categoryList.appendChild(categoryHeader);
         
         // Add posts for this category
-        posts.forEach((post, index) => {
+        for (const [index, post] of posts.entries()) {
           console.log(`  📄 Adding post ${index + 1}:`, { title: post.title, path: post.path });
           
           const li = document.createElement("li");
           li.className = "nav-item";
           
-          const link = document.createElement("a");
-          link.className = "nav-link text-truncate";
-          link.href = "#";
-          link.textContent = post.title;
-          link.dataset.path = post.path;
-          link.dataset.title = post.title;
-          link.title = post.title; // tooltip for truncated text
+          // Create enhanced topic card
+          const topicCard = document.createElement("a");
+          topicCard.className = "topic-card";
+          topicCard.href = "#";
+          topicCard.dataset.path = post.path;
+          topicCard.dataset.title = post.title;
+          topicCard.title = post.title; // tooltip
           
-          li.appendChild(link);
+          // Get description for the post
+          const description = await this.getPostDescription(post.path);
+          
+          topicCard.innerHTML = `
+            <div class="topic-title">${post.title}</div>
+            <div class="topic-description">${description}</div>
+          `;
+          
+          li.appendChild(topicCard);
           categoryList.appendChild(li);
-        });
-      });
+        }
+      }
       
-      console.log(`✅ Category list rendered: ${categories.length} categories, ${totalPosts} total posts`);
+      console.log(`✅ Enhanced category list rendered: ${categories.length} categories, ${totalPosts} total posts`);
     }
 
-    searchPosts(query) {
+    async searchPosts(query) {
       if (!categoryList) return;
       categoryList.innerHTML = "";
       let resultsFound = false;
       
       const normalizedQuery = query.toLowerCase().trim();
-      Object.keys(postsByCategory).forEach(category => {
+      
+      for (const category of Object.keys(postsByCategory)) {
         const matchingPosts = postsByCategory[category].filter(post => 
           post.title.toLowerCase().includes(normalizedQuery) ||
           category.toLowerCase().includes(normalizedQuery)
@@ -478,21 +1059,29 @@ document.addEventListener("DOMContentLoaded", function () {
           `;
           categoryList.appendChild(categoryHeader);
           
-          matchingPosts.forEach(post => {
+          for (const post of matchingPosts) {
             const li = document.createElement("li");
             li.className = "nav-item";
-            const link = document.createElement("a");
-            link.className = "nav-link";
-            link.href = "#";
-            link.dataset.path = post.path;
-            link.dataset.title = post.title;
-            link.innerHTML = this.highlightSearchTerm(post.title, normalizedQuery);
             
-            li.appendChild(link);
+            const topicCard = document.createElement("a");
+            topicCard.className = "topic-card";
+            topicCard.href = "#";
+            topicCard.dataset.path = post.path;
+            topicCard.dataset.title = post.title;
+            
+            const description = await this.getPostDescription(post.path);
+            const highlightedTitle = this.highlightSearchTerm(post.title, normalizedQuery);
+            
+            topicCard.innerHTML = `
+              <div class="topic-title">${highlightedTitle}</div>
+              <div class="topic-description">${description}</div>
+            `;
+            
+            li.appendChild(topicCard);
             categoryList.appendChild(li);
-          });
+          }
         }
-      });
+      }
       
       if (!resultsFound) {
         const noResults = document.createElement('li');
