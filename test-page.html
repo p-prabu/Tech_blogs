@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Functionality Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { padding: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        #categoryList { max-height: 400px; overflow-y: auto; }
+        #postContent { max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="mb-4">🧪 Blog Functionality Test Page</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="debug-section info">
+                    <h3>📱 Navigation Sidebar</h3>
+                    <div class="search-container mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search topics..." />
+                        </div>
+                    </div>
+                    <ul class="nav flex-column nav-pills" id="categoryList">
+                        <li class="nav-item">
+                            <div class="text-muted text-center py-4">
+                                <small>Loading topics...</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="debug-section info">
+                    <h3>📄 Post Content</h3>
+                    <div id="postContent" class="border p-3" style="min-height: 200px;">
+                        <div class="welcome-content text-center py-5">
+                            <h1 class="display-4 fw-bold text-primary mb-4">Welcome to AD Tech Blog 👋</h1>
+                            <p class="lead text-muted">Your comprehensive guide to Active Directory, PowerShell automation, and enterprise identity management.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="debug-section">
+                    <h3>🧪 Test Results</h3>
+                    <div id="testResults">
+                        <div class="text-muted">Tests will run automatically when page loads...</div>
+                    </div>
+                    <button class="btn btn-primary" onclick="window.blogTests && window.blogTests.runAll()">
+                        🔄 Run Tests Again
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="debug-section">
+                    <h3>🎮 Manual Test Controls</h3>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-secondary" onclick="testLoadWelcome()">
+                            📖 Load Welcome Post
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="testLoadAD()">
+                            📖 Load AD Post
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="testSearch()">
+                            🔍 Test Search
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="showDebugInfo()">
+                            🔍 Show Debug Info
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    
+    <!-- Our main script -->
+    <script src="assets/script.js"></script>
+    
+    <!-- Test functions -->
+    <script>
+        function testLoadWelcome() {
+            console.log('🧪 Manual test: Loading welcome post');
+            if (window.layoutManager) {
+                window.layoutManager.loadPost('posts/welcome.md', 'Welcome to Tech Blog');
+            } else {
+                console.error('❌ Layout manager not available');
+            }
+        }
+        
+        function testLoadAD() {
+            console.log('🧪 Manual test: Loading AD post');
+            if (window.layoutManager) {
+                window.layoutManager.loadPost('posts/01_what_is_active_directory.md', 'Active Directory (AD)');
+            } else {
+                console.error('❌ Layout manager not available');
+            }
+        }
+        
+        function testSearch() {
+            console.log('🧪 Manual test: Search functionality');
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = 'active';
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
+        
+        function showDebugInfo() {
+            console.log('🔍 Debug Info:');
+            console.log('- Layout Manager:', !!window.layoutManager);
+            console.log('- Category List Element:', !!document.getElementById('categoryList'));
+            console.log('- Post Content Element:', !!document.getElementById('postContent'));
+            console.log('- Search Input Element:', !!document.getElementById('searchInput'));
+            console.log('- marked.js loaded:', typeof marked !== 'undefined');
+            console.log('- js-yaml loaded:', typeof jsyaml !== 'undefined');
+            
+            // Show current state
+            if (window.layoutManager) {
+                console.log('- Layout Manager Methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(window.layoutManager)));
+            }
+        }
+        
+        // Run tests after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🧪 Running automated tests...');
+                showDebugInfo();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

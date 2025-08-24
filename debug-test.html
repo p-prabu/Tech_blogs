@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffe6e6; color: #d00; }
+        .success { background: #e6ffe6; color: #060; }
+        #categoryList li { list-style: none; padding: 5px; margin: 2px 0; background: #f9f9f9; }
+        #categoryList a { text-decoration: none; color: #333; }
+        #categoryList a:hover { color: #007bff; }
+    </style>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    
+    <div class="debug">
+        <h3>JavaScript Libraries Test:</h3>
+        <div id="libTest">Testing...</div>
+    </div>
+    
+    <div class="debug">
+        <h3>YAML Loading Test:</h3>
+        <div id="yamlTest">Testing...</div>
+    </div>
+    
+    <div class="debug">
+        <h3>DOM Elements Test:</h3>
+        <div id="domTest">Testing...</div>
+    </div>
+    
+    <div class="debug">
+        <h3>Category List (should populate automatically):</h3>
+        <ul id="categoryList"></ul>
+    </div>
+    
+    <div class="debug">
+        <h3>Post Content:</h3>
+        <div id="postContent">Default content</div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    
+    <script>
+        // Test 1: Check if libraries are loaded
+        document.getElementById('libTest').innerHTML = 
+            (typeof marked !== 'undefined' ? '✅ marked.js loaded' : '❌ marked.js failed') + '<br>' +
+            (typeof jsyaml !== 'undefined' ? '✅ js-yaml loaded' : '❌ js-yaml failed');
+        
+        // Test 2: Check DOM elements
+        const categoryList = document.getElementById("categoryList");
+        const postContent = document.getElementById("postContent");
+        
+        document.getElementById('domTest').innerHTML = 
+            (categoryList ? '✅ categoryList found' : '❌ categoryList not found') + '<br>' +
+            (postContent ? '✅ postContent found' : '❌ postContent not found');
+        
+        // Test 3: Load and parse YAML
+        fetch("assets/posts.yml")
+            .then(res => {
+                console.log('YAML fetch response:', res);
+                document.getElementById('yamlTest').innerHTML = `🌐 Fetch status: ${res.status} ${res.statusText}<br>`;
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.text();
+            })
+            .then(yamlText => {
+                console.log('YAML text loaded:', yamlText.length, 'characters');
+                document.getElementById('yamlTest').innerHTML += `📄 YAML loaded: ${yamlText.length} characters<br>`;
+                
+                const posts = jsyaml.load(yamlText);
+                console.log('Parsed posts:', posts);
+                document.getElementById('yamlTest').innerHTML += `📊 Parsed: ${posts.length} posts<br>`;
+                
+                // Group by category
+                const postsByCategory = posts.reduce((acc, post) => {
+                    const category = post.category || 'Uncategorized';
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(post);
+                    return acc;
+                }, {});
+                
+                console.log('Posts by category:', postsByCategory);
+                document.getElementById('yamlTest').innerHTML += `📂 Categories: ${Object.keys(postsByCategory).length}<br>`;
+                
+                // Render categories
+                categoryList.innerHTML = "";
+                Object.keys(postsByCategory).sort().forEach(category => {
+                    const categoryHeader = document.createElement('li');
+                    categoryHeader.innerHTML = `<strong>${category} (${postsByCategory[category].length})</strong>`;
+                    categoryList.appendChild(categoryHeader);
+                    
+                    postsByCategory[category].forEach(post => {
+                        const li = document.createElement("li");
+                        const link = document.createElement("a");
+                        link.href = "#";
+                        link.textContent = `  • ${post.title}`;
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            loadPost(post.path, post.title);
+                        };
+                        li.appendChild(link);
+                        categoryList.appendChild(li);
+                    });
+                });
+                
+                document.getElementById('yamlTest').innerHTML += '✅ Categories rendered successfully';
+                
+            })
+            .catch(err => {
+                console.error('YAML loading error:', err);
+                document.getElementById('yamlTest').innerHTML += `❌ Error: ${err.message}`;
+            });
+        
+        // Test post loading
+        function loadPost(path, title) {
+            console.log('Loading post:', path, title);
+            postContent.innerHTML = '<em>Loading...</em>';
+            
+            fetch(path)
+                .then(res => {
+                    console.log('Post fetch response:', res);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    return res.text();
+                })
+                .then(markdown => {
+                    console.log('Markdown loaded:', markdown.length, 'characters');
+                    const html = marked.parse(markdown);
+                    postContent.innerHTML = `<h2>${title}</h2><div>${html}</div>`;
+                    console.log('Post loaded successfully');
+                })
+                .catch(err => {
+                    console.error('Post loading error:', err);
+                    postContent.innerHTML = `<div style="color: red;">Error loading post: ${err.message}</div>`;
+                });
+        }
+    </script>
+</body>
+</html>
