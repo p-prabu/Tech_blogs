@@ -193,5 +193,10 @@
     "title": "Mental Picture of Active Directory",
     "path": "posts/ad_mental_pictures.md",
     "category": "Active Directory"
+  },
+  {
+    "title": "inside_ad_archite_database",
+    "path": "posts/inside_ad_archite_database.md",
+    "category": "Active Directory"
   }
 ]
