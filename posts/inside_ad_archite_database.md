@@ -1,4 +1,3 @@
-# **![][image1]**
 
 ![Data Architecture](../images/ad/inside_ad_arch.png)
 
