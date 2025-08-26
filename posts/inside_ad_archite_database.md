@@ -26,7 +26,7 @@ Where external clients or other DCs connect:
   * Global Catalog (GC) searches (forest-wide) use **3268** (GC) and **3269** (GC over TLS).
 
 * **REPL — Replication (DRS/DRSUAPI over RPC)**  
-  * **DRS- Director of Replication Services**  
+  * **DRS-  Directory Replication Services**  
   *    
   * Multi-master replication engine between DCs.
 
