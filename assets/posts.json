@@ -195,12 +195,12 @@
     "category": "Active Directory"
   },
   {
-    "title": "inside_ad_archite_database",
+    "title": "inside_ad_architecture",
     "path": "posts/inside_ad_archite_database.md",
     "category": "Active Directory"
   },
   {
-    "title": "inside_ad_archite_database",
+    "title": "inside_ad_datastore",
     "path": "posts/inside_ad_datastore.md",
     "category": "Active Directory"
   }
